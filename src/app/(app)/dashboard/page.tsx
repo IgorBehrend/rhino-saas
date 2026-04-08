@@ -130,7 +130,7 @@ export default async function DashboardPage() {
                   </div>
                   <div className="flex flex-col items-end gap-1">
                     <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
-                      {PRODUCTION_STATUS_CONFIG[p.status].label}
+                      {(PRODUCTION_STATUS_CONFIG as any)[p.status]?.label}
                     </span>
                     {p.delay_days && p.delay_days > 0 && (
                       <span className="text-xs text-red-600 font-semibold">{p.delay_days}d atraso</span>
