@@ -3,7 +3,6 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { createReservation, createPurchaseNeed } from './reservations';
 
 export async function getProductionRecords(filters?: { status?: string; machineId?: string }) {
   const supabase = await createClient();
@@ -32,19 +31,17 @@ export async function createProduction(formData: {
   planned_factory_date?: string | null;
   planned_delivery_date?: string | null;
   notes?: string | null;
-  // machine info for reservation/purchase
   machine_code: string;
   machine_name?: string;
   qty_physical?: number;
-  qty_system?: number;
 }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/auth/login');
 
-  const { machine_code, machine_name, qty_physical, qty_system, ...prodData } = formData;
+  const { machine_code, machine_name, qty_physical, ...prodData } = formData;
 
-  // Create the production record
+  // Create production record
   const { data: prod, error } = await supabase
     .from('production')
     .insert({ ...prodData, user_id: user.id, status: prodData.status ?? 'pending' })
@@ -55,35 +52,40 @@ export async function createProduction(formData: {
 
   const contract = formData.contract ?? '';
 
-  // Handle reservation or purchase need
+  // Create reservation or purchase need based on source
   if (formData.machine_source === 'stock') {
-    // Create stock reservation
-    await createReservation({
+    await supabase.from('reservations').insert({
+      user_id: user.id,
       machine_code,
-      machine_name,
+      machine_name: machine_name ?? null,
       contract,
       production_id: prod.id,
       source: 'stock',
+      status: 'active',
     });
   } else if (formData.machine_source === 'import' && formData.import_id) {
-    // Create import reservation
-    await createReservation({
+    await supabase.from('reservations').insert({
+      user_id: user.id,
       machine_code,
-      machine_name,
+      machine_name: machine_name ?? null,
       contract,
       production_id: prod.id,
       import_id: formData.import_id,
-      import_po_prosyst: formData.import_po_prosyst ?? undefined,
+      import_po_prosyst: formData.import_po_prosyst ?? null,
       source: 'import',
+      status: 'active',
     });
   } else {
     // No stock, no import → generate purchase need
-    await createPurchaseNeed({
+    await supabase.from('purchase_needs').insert({
+      user_id: user.id,
       machine_code,
-      machine_name,
+      machine_name: machine_name ?? null,
       contract,
       production_id: prod.id,
+      quantity: 1,
       urgency: 'urgent',
+      status: 'open',
     });
   }
 
