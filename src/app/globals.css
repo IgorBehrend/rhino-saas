@@ -7,72 +7,45 @@
     --sidebar-width: 240px;
   }
 
-  * {
-    @apply border-border;
-  }
-
   body {
     @apply bg-slate-50 text-slate-900;
   }
 
-  /* Custom scrollbar */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { @apply bg-transparent; }
+  ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { @apply bg-slate-300 rounded-full; }
   ::-webkit-scrollbar-thumb:hover { @apply bg-slate-400; }
 }
 
 @layer components {
-  /* Card base */
   .card {
     @apply bg-white rounded-xl border border-slate-200 shadow-sm;
   }
 
-  /* Input base */
   .input-base {
-    @apply w-full px-3 py-2 text-sm rounded-lg border border-slate-200
-           bg-white placeholder:text-slate-400
-           focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500
-           transition-colors;
+    @apply w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors;
   }
 
-  /* Label base */
   .label-base {
     @apply block text-sm font-medium text-slate-700 mb-1;
   }
 
-  /* Button variants */
   .btn-primary {
-    @apply inline-flex items-center gap-2 px-4 py-2 text-sm font-medium
-           bg-orange-600 text-white rounded-lg
-           hover:bg-orange-700 active:bg-orange-800
-           disabled:opacity-50 disabled:cursor-not-allowed
-           transition-colors;
+    @apply inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-orange-600 text-white rounded-lg hover:bg-orange-700 active:bg-orange-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center gap-2 px-4 py-2 text-sm font-medium
-           bg-white text-slate-700 rounded-lg border border-slate-200
-           hover:bg-slate-50 active:bg-slate-100
-           disabled:opacity-50 disabled:cursor-not-allowed
-           transition-colors;
+    @apply inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white text-slate-700 rounded-lg border border-slate-200 hover:bg-slate-50 active:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors;
   }
 
   .btn-danger {
-    @apply inline-flex items-center gap-2 px-4 py-2 text-sm font-medium
-           bg-red-600 text-white rounded-lg
-           hover:bg-red-700 active:bg-red-800
-           disabled:opacity-50 disabled:cursor-not-allowed
-           transition-colors;
+    @apply inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 active:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors;
   }
 
-  /* Status badge */
   .badge {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium
-           rounded-full border;
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full border;
   }
 
-  /* Table */
   .table-container {
     @apply overflow-x-auto rounded-xl border border-slate-200 bg-white;
   }
