@@ -1,145 +1,126 @@
-import { Suspense } from 'react';
-import { getDashboardStats, getMachines } from '@/lib/actions/machines';
-import { getProductionRecords } from '@/lib/actions/production';
+import { getMachines } from '@/lib/actions/machines';
+import { createClient } from '@/lib/supabase/server';
 import Header from '@/components/layout/Header';
 import StatCard from '@/components/ui/StatCard';
-import StatusBadge from '@/components/ui/StatusBadge';
-import { Package, Factory, CheckCircle, Wrench, BarChart3, AlertTriangle, Boxes, Clock } from 'lucide-react';
+import DashboardChart from '@/components/dashboard/DashboardChart';
 import Link from 'next/link';
-import { formatDate, truncate, PRODUCTION_STATUS_CONFIG } from '@/lib/utils';
+import { truncate } from '@/lib/utils';
+import { Package, Ship, AlertTriangle, CheckCircle, XCircle, BarChart3 } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = { title: 'Dashboard' };
 
-// ── Dashboard chart (client-only recharts import) ─────────────
-import DashboardChart from '@/components/dashboard/DashboardChart';
-
 export default async function DashboardPage() {
-  const [stats, recentMachines, recentProduction] = await Promise.all([
-    getDashboardStats(),
+  const supabase = await createClient();
+
+  const [machines, importsResult] = await Promise.all([
     getMachines(),
-    getProductionRecords(),
+    supabase.from('imports').select('code, status, supplier, estimated_arrival').not('status', 'eq', 'received'),
   ]);
 
-  const recentList = recentMachines.slice(0, 6);
-  const productionList = recentProduction.slice(0, 5);
+  const activeImports = importsResult.data ?? [];
+  const importCodes   = activeImports.map((r: any) => r.code).filter(Boolean);
 
-  // Qty discrepancy: physical ≠ system
-  const discrepancies = recentMachines.filter(m => m.qty_physical !== m.qty_system);
+  const inStock     = machines.filter(m => m.qty_physical > 0);
+  const outOfStock  = machines.filter(m => m.qty_physical === 0 && !importCodes.includes(m.code));
+  const discrepancy = machines.filter(m => m.qty_physical !== m.qty_system);
+
+  const chartStats = { inStock: inStock.length, outOfStock: outOfStock.length, inImport: activeImports.length };
 
   return (
     <div className="space-y-6 animate-slide-up">
-      <Header
-        title="Dashboard"
-        description="Visão geral do estoque e produção de máquinas"
-      />
+      <Header title="Dashboard" description="Visão geral do estoque de equipamentos" />
 
-      {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Total de Modelos" value={stats.total} icon={Boxes} color="orange" description={`${stats.totalUnits} unidades totais`} />
-        <StatCard title="Em Produção"      value={stats.production}  icon={Factory}      color="blue" />
-        <StatCard title="Disponíveis"      value={stats.available}   icon={CheckCircle}  color="emerald" />
-        <StatCard title="Manutenção"       value={stats.maintenance} icon={Wrench}       color="amber" />
+        <StatCard title="Total de Modelos"  value={machines.length}      icon={Package}     color="orange" description="equipamentos cadastrados" />
+        <StatCard title="Com Estoque"       value={inStock.length}       icon={CheckCircle} color="emerald" />
+        <StatCard title="Sem Estoque"       value={outOfStock.length}    icon={XCircle}     color="red" />
+        <StatCard title="Em Importação"     value={activeImports.length} icon={Ship}        color="blue" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Chart */}
         <div className="card p-5 lg:col-span-2">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-slate-800 flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-orange-600" />
-              Distribuição por Status
-            </h2>
-          </div>
-          <DashboardChart stats={stats} />
+          <h2 className="font-semibold text-slate-800 flex items-center gap-2 mb-4">
+            <BarChart3 className="w-4 h-4" style={{ color: '#008434' }} /> Situação do Estoque
+          </h2>
+          <DashboardChart stats={chartStats} />
         </div>
-
-        {/* Discrepancies alert */}
         <div className="card p-5">
           <h2 className="font-semibold text-slate-800 flex items-center gap-2 mb-4">
-            <AlertTriangle className="w-4 h-4 text-amber-600" />
-            Divergências de Estoque
-            {discrepancies.length > 0 && (
-              <span className="ml-auto text-xs font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
-                {discrepancies.length}
-              </span>
-            )}
+            <AlertTriangle className="w-4 h-4 text-amber-500" /> Divergências
+            {discrepancy.length > 0 && <span className="ml-auto text-xs font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">{discrepancy.length}</span>}
           </h2>
-          {discrepancies.length === 0 ? (
-            <p className="text-sm text-slate-500">Nenhuma divergência encontrada ✓</p>
+          {discrepancy.length === 0 ? (
+            <p className="text-sm text-slate-500">Nenhuma divergência ✓</p>
           ) : (
             <div className="space-y-2">
-              {discrepancies.slice(0, 6).map(m => (
-                <Link key={m.id} href={`/machines/${m.id}`} className="flex items-center justify-between py-1.5 text-sm hover:text-orange-600 transition-colors group">
-                  <span className="font-mono text-xs text-slate-600 group-hover:text-orange-600">{m.code}</span>
-                  <span className="text-xs text-amber-600 font-semibold">
-                    Sistema: {m.qty_system} / Físico: {m.qty_physical}
-                  </span>
-                </Link>
+              {discrepancy.slice(0, 7).map(m => (
+                <div key={m.id} className="flex items-center justify-between py-1.5">
+                  <span className="font-mono text-xs font-bold" style={{ color: '#008434' }}>{m.code}</span>
+                  <span className="text-xs text-amber-600 font-semibold">Sis: {m.qty_system} / Fís: {m.qty_physical}</span>
+                </div>
               ))}
             </div>
           )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent machines */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="card">
           <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-            <h2 className="font-semibold text-slate-800 flex items-center gap-2">
-              <Package className="w-4 h-4 text-orange-600" />
-              Máquinas Recentes
-            </h2>
-            <Link href="/machines" className="text-xs text-orange-600 hover:text-orange-800 font-medium">
-              Ver todas →
-            </Link>
+            <h2 className="font-semibold text-slate-800 flex items-center gap-2 text-sm"><CheckCircle className="w-4 h-4 text-emerald-500" /> Com Estoque</h2>
+            <Link href="/machines" className="text-xs font-medium" style={{ color: '#008434' }}>Ver todos →</Link>
           </div>
-          <div className="divide-y divide-slate-100">
-            {recentList.map(m => (
-              <Link key={m.id} href={`/machines/${m.id}`} className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50 transition-colors">
-                <div className="flex-1 min-w-0">
-                  <p className="font-mono text-xs font-semibold text-orange-600">{m.code}</p>
-                  <p className="text-xs text-slate-600 truncate mt-0.5">{truncate(m.name, 50)}</p>
+          <div className="divide-y divide-slate-100 max-h-64 overflow-y-auto">
+            {inStock.slice(0, 8).map(m => (
+              <div key={m.id} className="flex items-center justify-between px-5 py-3">
+                <div>
+                  <p className="font-mono text-xs font-bold" style={{ color: '#008434' }}>{m.code}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">{truncate(m.name, 38)}</p>
                 </div>
-                <StatusBadge status={m.status} />
-              </Link>
+                <span className="text-sm font-bold text-emerald-600">{m.qty_physical} un</span>
+              </div>
             ))}
+            {inStock.length === 0 && <p className="text-xs text-slate-400 px-5 py-4">Nenhum modelo com estoque.</p>}
           </div>
         </div>
 
-        {/* Production in progress */}
         <div className="card">
           <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-            <h2 className="font-semibold text-slate-800 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-orange-600" />
-              Ordens de Produção
-            </h2>
-            <Link href="/production" className="text-xs text-orange-600 hover:text-orange-800 font-medium">
-              Ver todas →
-            </Link>
+            <h2 className="font-semibold text-slate-800 flex items-center gap-2 text-sm"><XCircle className="w-4 h-4 text-red-500" /> Sem Estoque</h2>
+            <Link href="/machines" className="text-xs font-medium" style={{ color: '#008434' }}>Ver todos →</Link>
           </div>
-          {productionList.length === 0 ? (
-            <p className="text-sm text-slate-500 px-5 py-6">Nenhuma ordem ativa.</p>
-          ) : (
-            <div className="divide-y divide-slate-100">
-              {productionList.map(p => (
-                <div key={p.id} className="flex items-center gap-3 px-5 py-3">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-mono text-xs font-semibold text-slate-700">{p.machine?.code ?? '—'}</p>
-                    <p className="text-xs text-slate-500 truncate">{p.contract ?? 'Sem contrato'}</p>
-                  </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
-                      {(PRODUCTION_STATUS_CONFIG as any)[p.status]?.label}
-                    </span>
-                    {p.delay_days && p.delay_days > 0 && (
-                      <span className="text-xs text-red-600 font-semibold">{p.delay_days}d atraso</span>
-                    )}
-                  </div>
+          <div className="divide-y divide-slate-100 max-h-64 overflow-y-auto">
+            {outOfStock.slice(0, 8).map(m => (
+              <div key={m.id} className="flex items-center justify-between px-5 py-3">
+                <div>
+                  <p className="font-mono text-xs font-bold text-red-500">{m.code}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">{truncate(m.name, 38)}</p>
                 </div>
-              ))}
-            </div>
-          )}
+                <span className="text-xs font-bold text-red-500">0 un</span>
+              </div>
+            ))}
+            {outOfStock.length === 0 && <p className="text-xs text-slate-400 px-5 py-4">Nenhum modelo sem estoque ✓</p>}
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+            <h2 className="font-semibold text-slate-800 flex items-center gap-2 text-sm"><Ship className="w-4 h-4 text-blue-500" /> Em Importação</h2>
+            <Link href="/imports" className="text-xs font-medium" style={{ color: '#008434' }}>Ver todos →</Link>
+          </div>
+          <div className="divide-y divide-slate-100 max-h-64 overflow-y-auto">
+            {activeImports.slice(0, 8).map((imp: any, i: number) => (
+              <div key={i} className="flex items-center justify-between px-5 py-3">
+                <div>
+                  <p className="font-mono text-xs font-bold text-blue-600">{imp.code ?? '—'}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">{imp.supplier ?? '—'}</p>
+                </div>
+                <span className="text-xs text-blue-600 font-medium bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">{imp.status}</span>
+              </div>
+            ))}
+            {activeImports.length === 0 && <p className="text-xs text-slate-400 px-5 py-4">Nenhuma importação ativa.</p>}
+          </div>
         </div>
       </div>
     </div>
