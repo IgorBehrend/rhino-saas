@@ -14,15 +14,13 @@ export default async function ProductionPage() {
   const [records, machines, importsResult, importItemsResult] = await Promise.all([
     getProductionRecords(),
     getMachines(),
-    // All active imports (not received)
     supabase
       .from('imports')
-      .select('id, po_prosyst, supplier, estimated_arrival, code')
+      .select('id, po_prosyst, supplier, estimated_arrival, code, description')
       .not('status', 'eq', 'received'),
-    // All import items
     supabase
       .from('import_items')
-      .select('import_id, machine_code'),
+      .select('import_id, machine_code, machine_name, quantity'),
   ]);
 
   const machineOptions = machines.map(m => ({
@@ -32,25 +30,25 @@ export default async function ProductionPage() {
 
   const importItems = importItemsResult.data ?? [];
 
-  // Build active imports with their machine codes
-  // Match by: import_items table OR the legacy "code" field on imports table
+  // Build active imports — always show all, with their machine list
   const activeImports = (importsResult.data ?? []).map((imp: any) => {
-    const itemCodes = importItems
-      .filter((item: any) => item.import_id === imp.id)
-      .map((item: any) => item.machine_code);
+    // Get codes from import_items table
+    const itemsForThisImport = importItems.filter((item: any) => item.import_id === imp.id);
 
-    // Include the legacy code field too
-    const allCodes = [...new Set([...itemCodes, imp.code].filter(Boolean))];
+    // Also include legacy "code" field from imports table itself
+    const legacyCodes = imp.code ? [{ machine_code: imp.code, machine_name: imp.description ?? imp.code }] : [];
+
+    const allItems = itemsForThisImport.length > 0
+      ? itemsForThisImport
+      : legacyCodes;
 
     return {
       id: imp.id,
       po_prosyst: imp.po_prosyst,
       supplier: imp.supplier,
       estimated_arrival: imp.estimated_arrival,
-      // items array used for matching in ProductionForm
-      items: allCodes.map((code: string) => ({ machine_code: code })),
-      // If no items at all, show for all machines (legacy imports)
-      hasNoItems: allCodes.length === 0,
+      // All machines in this import
+      items: allItems,
     };
   });
 
