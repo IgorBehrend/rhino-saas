@@ -11,7 +11,10 @@ import EmptyState from '@/components/ui/EmptyState';
 import ExcelTools from '@/components/ui/ExcelTools';
 import { Plus, Search, Pencil, Trash2, Ship, Filter } from 'lucide-react';
 
-interface ImportListProps { records: Import[]; }
+interface ImportListProps {
+  records: Import[];
+  machines: { code: string; name: string }[];
+}
 
 const STATUS_CONFIG: Record<ImportStatus, { label: string; color: string; bg: string; dot: string }> = {
   pending:  { label: 'Pendente',       color: 'text-slate-600',   bg: 'bg-slate-100 border-slate-200',    dot: 'bg-slate-400' },
@@ -22,7 +25,7 @@ const STATUS_CONFIG: Record<ImportStatus, { label: string; color: string; bg: st
   received: { label: 'Recebido',       color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200', dot: 'bg-emerald-500' },
 };
 
-export default function ImportList({ records }: ImportListProps) {
+export default function ImportList({ records, machines }: ImportListProps) {
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [showForm, setShowForm]         = useState(false);
@@ -31,7 +34,8 @@ export default function ImportList({ records }: ImportListProps) {
   const [statusFilter, setStatusFilter] = useState('all');
 
   const filtered = records.filter(r => {
-    const matchSearch = !search || [r.po_prosyst, r.po_rhino, r.code, r.description, r.supplier].some(v => v?.toLowerCase().includes(search.toLowerCase()));
+    const matchSearch = !search || [r.po_prosyst, r.po_rhino, r.code, r.description, r.supplier]
+      .some(v => v?.toLowerCase().includes(search.toLowerCase()));
     return matchSearch && (statusFilter === 'all' || r.status === statusFilter);
   });
 
@@ -71,6 +75,7 @@ export default function ImportList({ records }: ImportListProps) {
         </button>
       </div>
 
+      {/* Summary cards */}
       <div className="grid grid-cols-3 lg:grid-cols-6 gap-3 mb-5">
         {Object.entries(STATUS_CONFIG).map(([status, cfg]) => (
           <button key={status} onClick={() => setStatusFilter(statusFilter === status ? 'all' : status)}
@@ -90,9 +95,9 @@ export default function ImportList({ records }: ImportListProps) {
           <table>
             <thead>
               <tr>
-                <th>Ações</th><th>Data Pedido</th><th>P.O. Prosyst</th><th>P.O. Rhino</th><th>Fornecedor</th>
-                <th>Código</th><th>Qtd</th><th>Descrição</th><th>Referência</th>
-                <th>Prev. Embarque</th><th>Prev. Porto</th><th>Status</th><th>Observações</th>
+                <th>Ações</th><th>Data Pedido</th><th>P.O. Prosyst</th><th>P.O. Rhino</th>
+                <th>Fornecedor</th><th>Código</th><th>Qtd</th><th>Descrição</th>
+                <th>Referência</th><th>Prev. Embarque</th><th>Prev. Porto</th><th>Status</th><th>Observações</th>
               </tr>
             </thead>
             <tbody>
@@ -138,7 +143,12 @@ export default function ImportList({ records }: ImportListProps) {
       )}
 
       {showForm && (
-        <ImportForm record={editRecord} onClose={() => { setShowForm(false); setEditRecord(undefined); }} onSuccess={() => startTransition(() => router.refresh())} />
+        <ImportForm
+          record={editRecord}
+          machines={machines}
+          onClose={() => { setShowForm(false); setEditRecord(undefined); }}
+          onSuccess={() => startTransition(() => router.refresh())}
+        />
       )}
     </div>
   );
