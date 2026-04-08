@@ -7,10 +7,9 @@ import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
   Package,
-  Wrench,
+  Factory,
   LogOut,
   ChevronRight,
-  Factory,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -27,22 +26,27 @@ export default function Sidebar({ userName }: SidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-30 w-[var(--sidebar-width)] flex flex-col
-                      bg-slate-900 border-r border-slate-800">
+    <aside
+      className="fixed inset-y-0 left-0 z-30 flex flex-col"
+      style={{ width: 'var(--sidebar-width)', backgroundColor: '#001e0e', borderRight: '1px solid #003a1d' }}
+    >
       {/* Logo */}
-      <div className="flex items-center gap-3 px-5 h-16 border-b border-slate-800">
-        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-orange-600 shrink-0">
-          <span className="text-white font-bold text-sm">R</span>
+      <div className="flex items-center gap-3 px-5 h-16" style={{ borderBottom: '1px solid #003a1d' }}>
+        <div
+          className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0 font-bold text-sm"
+          style={{ backgroundColor: '#008434', color: '#fff' }}
+        >
+          R
         </div>
         <div>
-          <p className="text-white font-semibold text-sm leading-none">RHINO</p>
-          <p className="text-slate-500 text-xs mt-0.5">Machines</p>
+          <p className="font-bold text-sm leading-none" style={{ color: '#ffffff' }}>RHINO</p>
+          <p className="text-xs mt-0.5" style={{ color: '#ffba00' }}>CNC Machines</p>
         </div>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        <p className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">
+        <p className="px-3 text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: '#00562c' }}>
           Menu
         </p>
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
@@ -52,11 +56,16 @@ export default function Sidebar({ userName }: SidebarProps) {
               key={href}
               href={href}
               className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group',
-                active
-                  ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/30'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group'
               )}
+              style={active ? {
+                backgroundColor: '#008434',
+                color: '#ffffff',
+              } : {
+                color: '#86efac',
+              }}
+              onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = '#003a1d'; }}
+              onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
             >
               <Icon className="w-4 h-4 shrink-0" />
               <span className="flex-1">{label}</span>
@@ -67,24 +76,27 @@ export default function Sidebar({ userName }: SidebarProps) {
       </nav>
 
       {/* User / signout */}
-      <div className="px-3 pb-4 border-t border-slate-800 pt-3">
+      <div className="px-3 pb-4 pt-3" style={{ borderTop: '1px solid #003a1d' }}>
         <div className="flex items-center gap-3 px-3 py-2.5 mb-1">
-          <div className="w-8 h-8 rounded-full bg-orange-600/20 border border-orange-600/30 flex items-center justify-center shrink-0">
-            <span className="text-orange-400 text-xs font-bold">
-              {userName?.[0]?.toUpperCase() ?? 'U'}
-            </span>
+          <div
+            className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
+            style={{ backgroundColor: '#00562c', color: '#ffba00', border: '1px solid #008434' }}
+          >
+            {userName?.[0]?.toUpperCase() ?? 'U'}
           </div>
           <div className="min-w-0">
-            <p className="text-white text-sm font-medium truncate">{userName ?? 'Usuário'}</p>
-            <p className="text-slate-500 text-xs">Operador</p>
+            <p className="text-sm font-medium truncate" style={{ color: '#ffffff' }}>{userName ?? 'Usuário'}</p>
+            <p className="text-xs" style={{ color: '#ffba00' }}>Operador</p>
           </div>
         </div>
 
         <form action={signOut}>
           <button
             type="submit"
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm
-                       text-slate-400 hover:text-white hover:bg-slate-800 transition-all"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all"
+            style={{ color: '#86efac' }}
+            onMouseEnter={e => (e.currentTarget as HTMLElement).style.backgroundColor = '#003a1d'}
+            onMouseLeave={e => (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'}
           >
             <LogOut className="w-4 h-4" />
             Sair

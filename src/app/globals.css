@@ -5,6 +5,10 @@
 @layer base {
   :root {
     --sidebar-width: 240px;
+    --brand-green-dark:  #001e0e;
+    --brand-green:       #008434;
+    --brand-green-mid:   #00562c;
+    --brand-yellow:      #ffba00;
   }
 
   body {
@@ -23,7 +27,8 @@
   }
 
   .input-base {
-    @apply w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors;
+    @apply w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:border-[#008434] transition-colors;
+    --tw-ring-color: #00843440;
   }
 
   .label-base {
@@ -31,8 +36,11 @@
   }
 
   .btn-primary {
-    @apply inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-orange-600 text-white rounded-lg hover:bg-orange-700 active:bg-orange-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors;
+    @apply inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors;
+    background-color: #008434;
   }
+  .btn-primary:hover { background-color: #00562c; }
+  .btn-primary:active { background-color: #003a1d; }
 
   .btn-secondary {
     @apply inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white text-slate-700 rounded-lg border border-slate-200 hover:bg-slate-50 active:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors;

@@ -27,27 +27,42 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-orange-900 flex items-center justify-center p-4">
-      {/* Background grid */}
-      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10 pointer-events-none" />
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{ background: 'linear-gradient(135deg, #001e0e 0%, #003a1d 50%, #001e0e 100%)' }}
+    >
+      {/* Subtle grid pattern */}
+      <div
+        className="absolute inset-0 opacity-5 pointer-events-none"
+        style={{
+          backgroundImage: 'linear-gradient(#008434 1px, transparent 1px), linear-gradient(90deg, #008434 1px, transparent 1px)',
+          backgroundSize: '40px 40px',
+        }}
+      />
 
       <div className="w-full max-w-sm relative">
-        {/* Logo / Brand */}
+        {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-orange-600 shadow-lg shadow-orange-900/50 mb-4">
-            <span className="text-white font-bold text-xl">R</span>
+          <div
+            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 shadow-lg"
+            style={{ backgroundColor: '#008434' }}
+          >
+            <span className="text-white font-bold text-2xl">R</span>
           </div>
-          <h1 className="text-2xl font-bold text-white">RHINO Machines</h1>
-          <p className="text-slate-400 text-sm mt-1">Gestão de Máquinas Industriais</p>
+          <h1 className="text-2xl font-bold text-white">RHINO CNC</h1>
+          <p className="text-sm mt-1" style={{ color: '#ffba00' }}>Gestão de Máquinas Industriais</p>
         </div>
 
         {/* Form card */}
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-2xl p-8">
+        <div
+          className="rounded-2xl shadow-2xl p-8"
+          style={{ backgroundColor: 'rgba(0,58,29,0.6)', backdropFilter: 'blur(12px)', border: '1px solid #00562c' }}
+        >
           <h2 className="text-lg font-semibold text-white mb-6">Entrar na plataforma</h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5">
+              <label className="block text-sm font-medium mb-1.5" style={{ color: '#86efac' }}>
                 E-mail
               </label>
               <input
@@ -55,15 +70,13 @@ export default function LoginPage() {
                 type="email"
                 required
                 placeholder="seu@email.com"
-                className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-lg
-                           text-white placeholder:text-slate-500 text-sm
-                           focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500
-                           transition-colors"
+                className="w-full px-3.5 py-2.5 rounded-lg text-white text-sm placeholder:text-slate-500 focus:outline-none transition-colors"
+                style={{ backgroundColor: 'rgba(0,30,14,0.8)', border: '1px solid #00562c' }}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5">
+              <label className="block text-sm font-medium mb-1.5" style={{ color: '#86efac' }}>
                 Senha
               </label>
               <input
@@ -71,10 +84,8 @@ export default function LoginPage() {
                 type="password"
                 required
                 placeholder="••••••••"
-                className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-lg
-                           text-white placeholder:text-slate-500 text-sm
-                           focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500
-                           transition-colors"
+                className="w-full px-3.5 py-2.5 rounded-lg text-white text-sm placeholder:text-slate-500 focus:outline-none transition-colors"
+                style={{ backgroundColor: 'rgba(0,30,14,0.8)', border: '1px solid #00562c' }}
               />
             </div>
 
@@ -88,23 +99,29 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4
-                         bg-orange-600 hover:bg-orange-700 active:bg-orange-800
-                         text-white font-medium text-sm rounded-lg
-                         disabled:opacity-60 disabled:cursor-not-allowed
-                         transition-colors mt-2"
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 text-white font-medium text-sm rounded-lg disabled:opacity-60 disabled:cursor-not-allowed transition-colors mt-2"
+              style={{ backgroundColor: '#008434' }}
+              onMouseEnter={e => (e.currentTarget as HTMLElement).style.backgroundColor = '#00562c'}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.backgroundColor = '#008434'}
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               {loading ? 'Entrando...' : 'Entrar'}
             </button>
           </form>
 
-          <p className="text-center text-sm text-slate-400 mt-6">
+          <p className="text-center text-sm mt-6" style={{ color: '#86efac' }}>
             Não tem conta?{' '}
-            <Link href="/auth/signup" className="text-orange-400 hover:text-orange-300 font-medium transition-colors">
+            <Link href="/auth/signup" className="font-medium transition-colors" style={{ color: '#ffba00' }}>
               Criar conta
             </Link>
           </p>
+        </div>
+
+        {/* Yellow accent line */}
+        <div className="mt-6 flex items-center justify-center gap-2">
+          <div className="h-px flex-1" style={{ backgroundColor: '#003a1d' }} />
+          <div className="w-8 h-0.5 rounded-full" style={{ backgroundColor: '#ffba00' }} />
+          <div className="h-px flex-1" style={{ backgroundColor: '#003a1d' }} />
         </div>
       </div>
     </div>
