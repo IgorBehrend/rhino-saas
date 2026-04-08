@@ -4,23 +4,16 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from '@/lib/actions/auth';
 import { cn } from '@/lib/utils';
-import {
-  LayoutDashboard,
-  Package,
-  Factory,
-  LogOut,
-  ChevronRight,
-} from 'lucide-react';
+import { LayoutDashboard, Package, Factory, Ship, LogOut, ChevronRight } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { href: '/dashboard',  label: 'Dashboard',  icon: LayoutDashboard },
-  { href: '/machines',   label: 'Máquinas',   icon: Package },
-  { href: '/production', label: 'Produção',   icon: Factory },
+  { href: '/dashboard',  label: 'Dashboard',    icon: LayoutDashboard },
+  { href: '/machines',   label: 'Máquinas',     icon: Package },
+  { href: '/production', label: 'Produção',     icon: Factory },
+  { href: '/imports',    label: 'Importações',  icon: Ship },
 ];
 
-interface SidebarProps {
-  userName?: string | null;
-}
+interface SidebarProps { userName?: string | null; }
 
 export default function Sidebar({ userName }: SidebarProps) {
   const pathname = usePathname();
@@ -32,38 +25,29 @@ export default function Sidebar({ userName }: SidebarProps) {
     >
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 h-16" style={{ borderBottom: '1px solid #003a1d' }}>
-        <div
-          className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0 font-bold text-sm"
-          style={{ backgroundColor: '#008434', color: '#fff' }}
-        >
+        <div className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0 font-bold text-sm text-white" style={{ backgroundColor: '#008434' }}>
           R
         </div>
         <div>
-          <p className="font-bold text-sm leading-none" style={{ color: '#ffffff' }}>RHINO</p>
+          <p className="font-bold text-sm leading-none text-white">RHINO</p>
           <p className="text-xs mt-0.5" style={{ color: '#ffba00' }}>CNC Machines</p>
         </div>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        <p className="px-3 text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: '#00562c' }}>
-          Menu
-        </p>
+        <p className="px-3 text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: '#00562c' }}>Menu</p>
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + '/');
           return (
             <Link
               key={href}
               href={href}
-              className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group'
-              )}
-              style={active ? {
-                backgroundColor: '#008434',
-                color: '#ffffff',
-              } : {
-                color: '#86efac',
-              }}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all"
+              style={active
+                ? { backgroundColor: '#008434', color: '#ffffff' }
+                : { color: '#86efac' }
+              }
               onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = '#003a1d'; }}
               onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
             >
@@ -78,18 +62,14 @@ export default function Sidebar({ userName }: SidebarProps) {
       {/* User / signout */}
       <div className="px-3 pb-4 pt-3" style={{ borderTop: '1px solid #003a1d' }}>
         <div className="flex items-center gap-3 px-3 py-2.5 mb-1">
-          <div
-            className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
-            style={{ backgroundColor: '#00562c', color: '#ffba00', border: '1px solid #008434' }}
-          >
+          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold" style={{ backgroundColor: '#00562c', color: '#ffba00', border: '1px solid #008434' }}>
             {userName?.[0]?.toUpperCase() ?? 'U'}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium truncate" style={{ color: '#ffffff' }}>{userName ?? 'Usuário'}</p>
+            <p className="text-sm font-medium truncate text-white">{userName ?? 'Usuário'}</p>
             <p className="text-xs" style={{ color: '#ffba00' }}>Operador</p>
           </div>
         </div>
-
         <form action={signOut}>
           <button
             type="submit"
