@@ -32,6 +32,30 @@ export async function getPurchaseNeeds(status?: string) {
   return data ?? [];
 }
 
+export async function createPurchaseNeed(payload: {
+  machine_code: string;
+  machine_name?: string;
+  contract: string;
+  production_id?: string;
+  quantity?: number;
+  urgency?: 'urgent' | 'normal' | 'low';
+  notes?: string;
+}) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/auth/login');
+
+  const { data, error } = await supabase
+    .from('purchase_needs')
+    .insert({ ...payload, user_id: user.id, status: 'open' })
+    .select()
+    .single();
+
+  if (error) return { error: error.message };
+  revalidatePath('/purchases');
+  return { data };
+}
+
 export async function updatePurchaseNeedStatus(id: string, status: string, importId?: string) {
   const supabase = await createClient();
   const update: Record<string, string> = { status };
