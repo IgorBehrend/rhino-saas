@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { X, Loader2, Plus, Trash2 } from 'lucide-react';
 import { createImport, updateImport } from '@/lib/actions/imports';
 import { upsertImportItems } from '@/lib/actions/reservations';
-import { Import } from '@/types/imports';
 
 interface ImportItem {
   machine_code: string;
@@ -14,8 +13,26 @@ interface ImportItem {
   description: string;
 }
 
+interface ImportRecord {
+  id?: string;
+  order_date?: string | null;
+  po_prosyst?: string | null;
+  po_rhino?: string | null;
+  supplier?: string | null;
+  po_date?: string | null;
+  estimated_shipment?: string | null;
+  estimated_arrival?: string | null;
+  status?: string;
+  notes?: string | null;
+  code?: string | null;
+  description?: string | null;
+  quantity?: number | null;
+  reference?: string | null;
+  items?: ImportItem[];
+}
+
 interface ImportFormProps {
-  record?: Import & { items?: ImportItem[] };
+  record?: ImportRecord;
   machines: { code: string; name: string }[];
   onClose: () => void;
   onSuccess?: () => void;
@@ -28,9 +45,26 @@ const STATUS_OPTIONS = [
   { value: 'port',     label: 'No Porto' },
   { value: 'customs',  label: 'Em Desembaraço' },
   { value: 'received', label: 'Recebido' },
-] as const;
+];
 
-const EMPTY_ITEM: ImportItem = { machine_code: '', machine_name: '', quantity: 1, reference: '', description: '' };
+function buildInitialItems(record?: ImportRecord): ImportItem[] {
+  // If record has items array (from import_items table), use that
+  if (record?.items && record.items.length > 0) {
+    return record.items;
+  }
+  // Fallback: use legacy code/description/quantity/reference from imports table
+  if (record?.code) {
+    return [{
+      machine_code: record.code,
+      machine_name: record.description ?? record.code,
+      quantity: record.quantity ?? 1,
+      reference: record.reference ?? '',
+      description: record.description ?? '',
+    }];
+  }
+  // New record: start with one empty item
+  return [{ machine_code: '', machine_name: '', quantity: 1, reference: '', description: '' }];
+}
 
 export default function ImportForm({ record, machines, onClose, onSuccess }: ImportFormProps) {
   const [orderDate,   setOrderDate]   = useState(record?.order_date ?? '');
@@ -42,7 +76,7 @@ export default function ImportForm({ record, machines, onClose, onSuccess }: Imp
   const [estArrival,  setEstArrival]  = useState(record?.estimated_arrival ?? '');
   const [status,      setStatus]      = useState(record?.status ?? 'pending');
   const [notes,       setNotes]       = useState(record?.notes ?? '');
-  const [items, setItems]             = useState<ImportItem[]>(record?.items ?? [{ ...EMPTY_ITEM }]);
+  const [items,       setItems]       = useState<ImportItem[]>(() => buildInitialItems(record));
   const [loading,     setLoading]     = useState(false);
   const [error,       setError]       = useState<string | null>(null);
 
@@ -56,17 +90,24 @@ export default function ImportForm({ record, machines, onClose, onSuccess }: Imp
     setItems(prev => {
       const next = [...prev];
       next[idx] = { ...next[idx], [field]: value };
-      // Auto-fill name when code selected
-      if (field === 'machine_code') {
+      if (field === 'machine_code' && value) {
         const found = machines.find(m => m.code === String(value));
-        if (found) { next[idx].machine_name = found.name; next[idx].description = found.name; }
+        if (found) {
+          next[idx].machine_name = found.name;
+          if (!next[idx].description) next[idx].description = found.name;
+        }
       }
       return next;
     });
   }
 
-  function addItem() { setItems(prev => [...prev, { ...EMPTY_ITEM }]); }
-  function removeItem(idx: number) { setItems(prev => prev.filter((_, i) => i !== idx)); }
+  function addItem() {
+    setItems(prev => [...prev, { machine_code: '', machine_name: '', quantity: 1, reference: '', description: '' }]);
+  }
+
+  function removeItem(idx: number) {
+    setItems(prev => prev.filter((_, i) => i !== idx));
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -75,28 +116,37 @@ export default function ImportForm({ record, machines, onClose, onSuccess }: Imp
 
     setLoading(true); setError(null);
 
+    const firstItem = validItems[0];
     const payload = {
-      order_date: orderDate || null, po_prosyst: poProsyst || null, po_rhino: poRhino || null,
-      supplier: supplier || null, po_date: poDate || null,
-      code: validItems[0]?.machine_code || null,
-      quantity: validItems[0]?.quantity || null,
-      description: validItems[0]?.description || null,
-      reference: validItems[0]?.reference || null,
-      estimated_shipment: estShipment || null, estimated_arrival: estArrival || null,
-      status: status as any, notes: notes || null,
+      order_date:         orderDate || null,
+      po_prosyst:         poProsyst || null,
+      po_rhino:           poRhino || null,
+      supplier:           supplier || null,
+      po_date:            poDate || null,
+      code:               firstItem.machine_code || null,
+      quantity:           firstItem.quantity || null,
+      description:        firstItem.description || null,
+      reference:          firstItem.reference || null,
+      estimated_shipment: estShipment || null,
+      estimated_arrival:  estArrival || null,
+      status:             status as any,
+      notes:              notes || null,
     };
 
     let importId = record?.id;
+    let result: any;
 
-    const result = record
-      ? await updateImport(record.id, payload)
-      : await createImport(payload);
+    if (record?.id) {
+      result = await updateImport(record.id, payload);
+    } else {
+      result = await createImport(payload);
+      if (result?.data) importId = result.data.id;
+    }
 
     if (result?.error) { setError(result.error); setLoading(false); return; }
-    if (!record && result?.data) importId = result.data.id;
 
-    // Save all items
-    if (importId && validItems.length > 0) {
+    // Save all items to import_items table
+    if (importId) {
       await upsertImportItems(importId, validItems.map(i => ({
         machine_code: i.machine_code,
         machine_name: i.machine_name || undefined,
@@ -112,6 +162,7 @@ export default function ImportForm({ record, machines, onClose, onSuccess }: Imp
 
   const inp = 'input-base';
   const lbl = 'label-base';
+  const validCount = items.filter(i => i.machine_code).length;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -119,7 +170,7 @@ export default function ImportForm({ record, machines, onClose, onSuccess }: Imp
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto animate-slide-up">
         <div className="flex items-center justify-between p-5 border-b border-slate-100">
           <div>
-            <h2 className="font-semibold text-slate-900">{record ? 'Editar Importação' : 'Nova Importação'}</h2>
+            <h2 className="font-semibold text-slate-900">{record?.id ? 'Editar Importação' : 'Nova Importação'}</h2>
             <p className="text-xs text-slate-500 mt-0.5">Adicione todos os equipamentos da mesma P.O.</p>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
@@ -129,10 +180,11 @@ export default function ImportForm({ record, machines, onClose, onSuccess }: Imp
           {/* PO Header */}
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Dados da P.O.</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <div><label className={lbl}>Data do Pedido</label><input type="date" value={orderDate} onChange={e => setOrderDate(e.target.value)} className={inp} /></div>
-              <div><label className={lbl}>Status</label>
-                <select value={status} onChange={e => setStatus(e.target.value as any)} className={inp}>
+              <div>
+                <label className={lbl}>Status</label>
+                <select value={status} onChange={e => setStatus(e.target.value)} className={inp}>
                   {STATUS_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                 </select>
               </div>
@@ -149,9 +201,9 @@ export default function ImportForm({ record, machines, onClose, onSuccess }: Imp
           <div>
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                Equipamentos ({items.filter(i => i.machine_code).length})
+                Equipamentos ({validCount})
               </h3>
-              <button type="button" onClick={addItem} className="btn-secondary text-xs py-1 px-3">
+              <button type="button" onClick={addItem} className="btn-secondary text-xs py-1.5 px-3">
                 <Plus className="w-3.5 h-3.5" /> Adicionar equipamento
               </button>
             </div>
@@ -159,15 +211,14 @@ export default function ImportForm({ record, machines, onClose, onSuccess }: Imp
             <div className="space-y-3">
               {items.map((item, idx) => (
                 <div key={idx} className="border border-slate-200 rounded-xl p-4 relative">
-                  <div className="absolute top-3 right-3 flex items-center gap-1">
-                    <span className="text-xs text-slate-400 font-medium">#{idx + 1}</span>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-semibold text-slate-500">Equipamento #{idx + 1}</span>
                     {items.length > 1 && (
-                      <button type="button" onClick={() => removeItem(idx)} className="p-1 text-slate-400 hover:text-red-500 transition-colors">
+                      <button type="button" onClick={() => removeItem(idx)} className="text-slate-400 hover:text-red-500 transition-colors">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     )}
                   </div>
-
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div className="sm:col-span-2">
                       <label className={lbl}>Equipamento</label>
@@ -196,7 +247,6 @@ export default function ImportForm({ record, machines, onClose, onSuccess }: Imp
             </div>
           </div>
 
-          {/* Notes */}
           <div>
             <label className={lbl}>Observações gerais</label>
             <textarea rows={2} value={notes} onChange={e => setNotes(e.target.value)} className={`${inp} resize-none`} />
@@ -208,7 +258,7 @@ export default function ImportForm({ record, machines, onClose, onSuccess }: Imp
             <button type="button" onClick={onClose} className="btn-secondary">Cancelar</button>
             <button type="submit" disabled={loading} className="btn-primary">
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-              {record ? 'Salvar alterações' : `Criar importação com ${items.filter(i => i.machine_code).length} item(s)`}
+              {record?.id ? 'Salvar alterações' : `Criar importação (${validCount} item${validCount !== 1 ? 's' : ''})`}
             </button>
           </div>
         </form>

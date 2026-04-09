@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: 'Necessidades de Compra' };
 
 export default async function PurchasesPage() {
   const needs = await getPurchaseNeeds();
-  const open  = needs.filter(n => n.status === 'open').length;
+  const open  = needs.filter((n: any) => n.status === 'open').length;
 
   return (
     <div className="animate-slide-up">

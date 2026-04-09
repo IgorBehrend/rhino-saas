@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Import, ImportStatus } from '@/types/imports';
 import { deleteImport } from '@/lib/actions/imports';
 import { formatDate, truncate } from '@/lib/utils';
 import ImportForm from './ImportForm';
@@ -11,8 +10,28 @@ import EmptyState from '@/components/ui/EmptyState';
 import ExcelTools from '@/components/ui/ExcelTools';
 import { Plus, Search, Pencil, Trash2, Ship, Filter } from 'lucide-react';
 
+type ImportStatus = 'pending'|'ordered'|'shipped'|'port'|'customs'|'received';
+
+interface ImportRecord {
+  id: string;
+  order_date: string | null;
+  po_prosyst: string | null;
+  po_rhino: string | null;
+  supplier: string | null;
+  po_date: string | null;
+  code: string | null;
+  quantity: number | null;
+  description: string | null;
+  reference: string | null;
+  estimated_shipment: string | null;
+  estimated_arrival: string | null;
+  status: ImportStatus;
+  notes: string | null;
+  items?: { machine_code: string; machine_name: string; quantity: number; reference: string; description: string }[];
+}
+
 interface ImportListProps {
-  records: Import[];
+  records: ImportRecord[];
   machines: { code: string; name: string }[];
 }
 
@@ -29,7 +48,7 @@ export default function ImportList({ records, machines }: ImportListProps) {
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [showForm, setShowForm]         = useState(false);
-  const [editRecord, setEditRecord]     = useState<Import | undefined>();
+  const [editRecord, setEditRecord]     = useState<ImportRecord | undefined>();
   const [search, setSearch]             = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -42,6 +61,17 @@ export default function ImportList({ records, machines }: ImportListProps) {
   async function handleDelete(id: string) {
     await deleteImport(id);
     startTransition(() => router.refresh());
+  }
+
+  function handleEdit(record: ImportRecord) {
+    // Build items from legacy code field if no items array
+    const items = record.items && record.items.length > 0
+      ? record.items
+      : record.code
+        ? [{ machine_code: record.code, machine_name: record.description ?? record.code, quantity: record.quantity ?? 1, reference: record.reference ?? '', description: record.description ?? '' }]
+        : [];
+    setEditRecord({ ...record, items });
+    setShowForm(true);
   }
 
   function daysUntil(dateStr: string | null): number | null {
@@ -57,8 +87,8 @@ export default function ImportList({ records, machines }: ImportListProps) {
 
   return (
     <div>
-      <div className="flex flex-wrap items-center gap-3 mb-5">
-        <div className="relative flex-1 min-w-[200px]">
+      <div className="flex flex-wrap items-center gap-2 mb-5">
+        <div className="relative flex-1 min-w-[180px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por P.O., código, fornecedor..." className="input-base pl-9" />
         </div>
@@ -76,7 +106,7 @@ export default function ImportList({ records, machines }: ImportListProps) {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-3 lg:grid-cols-6 gap-3 mb-5">
+      <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 mb-5">
         {Object.entries(STATUS_CONFIG).map(([status, cfg]) => (
           <button key={status} onClick={() => setStatusFilter(statusFilter === status ? 'all' : status)}
             className={`card p-3 text-center transition-all hover:shadow-md ${statusFilter === status ? 'ring-2 ring-green-600' : ''}`}>
@@ -87,7 +117,7 @@ export default function ImportList({ records, machines }: ImportListProps) {
       </div>
 
       {filtered.length === 0 ? (
-        <EmptyState icon={Ship} title="Nenhuma importação encontrada" description="Crie uma nova importação."
+        <EmptyState icon={Ship} title="Nenhuma importação" description="Crie uma nova importação."
           action={<button onClick={() => setShowForm(true)} className="btn-primary"><Plus className="w-4 h-4" /> Nova importação</button>}
         />
       ) : (
@@ -97,7 +127,7 @@ export default function ImportList({ records, machines }: ImportListProps) {
               <tr>
                 <th>Ações</th><th>Data Pedido</th><th>P.O. Prosyst</th><th>P.O. Rhino</th>
                 <th>Fornecedor</th><th>Código</th><th>Qtd</th><th>Descrição</th>
-                <th>Referência</th><th>Prev. Embarque</th><th>Prev. Porto</th><th>Status</th><th>Observações</th>
+                <th>Referência</th><th>Prev. Embarque</th><th>Prev. Porto</th><th>Status</th><th>Obs.</th>
               </tr>
             </thead>
             <tbody>
@@ -108,9 +138,11 @@ export default function ImportList({ records, machines }: ImportListProps) {
                   <tr key={r.id}>
                     <td>
                       <div className="flex items-center gap-1">
-                        <button onClick={() => { setEditRecord(r); setShowForm(true); }} className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors" title="Editar"><Pencil className="w-4 h-4" /></button>
-                        <ConfirmDelete title="Excluir importação" description="Remover esta importação permanentemente?" onConfirm={() => handleDelete(r.id)}>
-                          <button className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors" title="Excluir"><Trash2 className="w-4 h-4" /></button>
+                        <button onClick={() => handleEdit(r)} className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors" title="Editar">
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <ConfirmDelete title="Excluir importação" description="Remover esta importação?" onConfirm={() => handleDelete(r.id)}>
+                          <button className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"><Trash2 className="w-4 h-4" /></button>
                         </ConfirmDelete>
                       </div>
                     </td>
@@ -132,7 +164,7 @@ export default function ImportList({ records, machines }: ImportListProps) {
                       )}
                     </td>
                     <td><span className={`badge ${cfg.bg} ${cfg.color}`}><span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />{cfg.label}</span></td>
-                    <td className="text-xs max-w-[120px]"><span title={r.notes ?? ''}>{truncate(r.notes ?? '', 30)}</span></td>
+                    <td className="text-xs max-w-[100px]"><span title={r.notes ?? ''}>{truncate(r.notes ?? '', 25)}</span></td>
                   </tr>
                 );
               })}

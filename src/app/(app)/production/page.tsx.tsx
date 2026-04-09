@@ -14,10 +14,12 @@ export default async function ProductionPage() {
   const [records, machines, importsResult, importItemsResult] = await Promise.all([
     getProductionRecords(),
     getMachines(),
+    // ALL active imports (not received) - no machine filter
     supabase
       .from('imports')
       .select('id, po_prosyst, supplier, estimated_arrival, code, description')
       .not('status', 'eq', 'received'),
+    // ALL import items
     supabase
       .from('import_items')
       .select('import_id, machine_code, machine_name, quantity'),
@@ -29,26 +31,34 @@ export default async function ProductionPage() {
   }));
 
   const importItems = importItemsResult.data ?? [];
+  const allImports  = importsResult.data ?? [];
 
-  // Build active imports — always show all, with their machine list
-  const activeImports = (importsResult.data ?? []).map((imp: any) => {
-    // Get codes from import_items table
-    const itemsForThisImport = importItems.filter((item: any) => item.import_id === imp.id);
+  // Build active imports with their machines
+  const activeImports = allImports.map((imp: any) => {
+    // Items from import_items table
+    const linkedItems = importItems
+      .filter((item: any) => item.import_id === imp.id)
+      .map((item: any) => ({
+        machine_code: item.machine_code,
+        machine_name: item.machine_name,
+        quantity: item.quantity,
+      }));
 
-    // Also include legacy "code" field from imports table itself
-    const legacyCodes = imp.code ? [{ machine_code: imp.code, machine_name: imp.description ?? imp.code }] : [];
-
-    const allItems = itemsForThisImport.length > 0
-      ? itemsForThisImport
-      : legacyCodes;
+    // Fallback: use legacy "code" field from imports table
+    if (linkedItems.length === 0 && imp.code) {
+      linkedItems.push({
+        machine_code: imp.code,
+        machine_name: imp.description ?? imp.code,
+        quantity: 1,
+      });
+    }
 
     return {
-      id: imp.id,
-      po_prosyst: imp.po_prosyst,
-      supplier: imp.supplier,
+      id:                imp.id,
+      po_prosyst:        imp.po_prosyst,
+      supplier:          imp.supplier,
       estimated_arrival: imp.estimated_arrival,
-      // All machines in this import
-      items: allItems,
+      items:             linkedItems,
     };
   });
 
