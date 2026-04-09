@@ -34,12 +34,17 @@ export async function createProduction(formData: {
   machine_code: string;
   machine_name?: string;
   qty_physical?: number;
+  generate_purchase_need?: boolean;
 }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/auth/login');
 
-  const { machine_code, machine_name, qty_physical, ...prodData } = formData;
+  const {
+    machine_code, machine_name, qty_physical,
+    generate_purchase_need,
+    ...prodData
+  } = formData;
 
   // Create production record
   const { data: prod, error } = await supabase
@@ -52,36 +57,22 @@ export async function createProduction(formData: {
 
   const contract = formData.contract ?? '';
 
-  if (formData.machine_source === 'stock') {
-    // ── Decrement physical stock ──────────────────────────────
-    // Fetch current qty_physical
-    const { data: machine } = await supabase
-      .from('machines')
-      .select('qty_physical')
-      .eq('id', formData.machine_id)
-      .single();
-
-    const currentQty = machine?.qty_physical ?? 0;
-    const newQty     = Math.max(0, currentQty - 1);
-
-    await supabase
-      .from('machines')
-      .update({ qty_physical: newQty })
-      .eq('id', formData.machine_id);
-
-    // ── Create stock reservation ──────────────────────────────
-    await supabase.from('reservations').insert({
-      user_id:      user.id,
+  // ── Decide what to do based on source and flags ───────────
+  if (generate_purchase_need) {
+    // No stock, no import → generate purchase need
+    await supabase.from('purchase_needs').insert({
+      user_id:       user.id,
       machine_code,
-      machine_name: machine_name ?? null,
+      machine_name:  machine_name ?? null,
       contract,
       production_id: prod.id,
-      source:        'stock',
-      status:        'active',
+      quantity:      1,
+      urgency:       'urgent',
+      status:        'open',
     });
 
   } else if (formData.machine_source === 'import' && formData.import_id) {
-    // ── Create import reservation ─────────────────────────────
+    // Import reservation
     await supabase.from('reservations').insert({
       user_id:           user.id,
       machine_code,
@@ -94,18 +85,46 @@ export async function createProduction(formData: {
       status:            'active',
     });
 
-  } else {
-    // ── No stock, no import → generate purchase need ──────────
-    await supabase.from('purchase_needs').insert({
-      user_id:      user.id,
-      machine_code,
-      machine_name: machine_name ?? null,
-      contract,
-      production_id: prod.id,
-      quantity:      1,
-      urgency:       'urgent',
-      status:        'open',
-    });
+  } else if (formData.machine_source === 'stock') {
+    // Stock: check current qty and decrement
+    const { data: machine } = await supabase
+      .from('machines')
+      .select('qty_physical')
+      .eq('id', formData.machine_id)
+      .single();
+
+    const currentQty = machine?.qty_physical ?? 0;
+
+    if (currentQty <= 0) {
+      // No stock available → generate purchase need instead
+      await supabase.from('purchase_needs').insert({
+        user_id:       user.id,
+        machine_code,
+        machine_name:  machine_name ?? null,
+        contract,
+        production_id: prod.id,
+        quantity:      1,
+        urgency:       'urgent',
+        status:        'open',
+      });
+    } else {
+      // Decrement stock
+      await supabase
+        .from('machines')
+        .update({ qty_physical: currentQty - 1 })
+        .eq('id', formData.machine_id);
+
+      // Create stock reservation
+      await supabase.from('reservations').insert({
+        user_id:       user.id,
+        machine_code,
+        machine_name:  machine_name ?? null,
+        contract,
+        production_id: prod.id,
+        source:        'stock',
+        status:        'active',
+      });
+    }
   }
 
   revalidatePath('/production');
@@ -126,14 +145,13 @@ export async function updateProductionStatus(id: string, status: string, extra?:
 export async function deleteProduction(id: string, machineId: string) {
   const supabase = await createClient();
 
-  // Get production record to check source and restore stock if needed
+  // Get production to restore stock if needed
   const { data: prod } = await supabase
     .from('production')
     .select('machine_source, machine_id')
     .eq('id', id)
     .single();
 
-  // If it was a stock order, restore the qty_physical
   if (prod?.machine_source === 'stock' && prod?.machine_id) {
     const { data: machine } = await supabase
       .from('machines')
@@ -149,13 +167,12 @@ export async function deleteProduction(id: string, machineId: string) {
     }
   }
 
-  // Cancel related reservations
+  // Cancel reservations
   await supabase
     .from('reservations')
     .update({ status: 'cancelled' })
     .eq('production_id', id);
 
-  // Delete production
   const { error } = await supabase.from('production').delete().eq('id', id);
   if (error) return { error: error.message };
 
