@@ -32,7 +32,6 @@ export async function POST(req: NextRequest) {
     const contents = body.messages.map((msg) => {
       const role = msg.role === 'assistant' ? 'model' : 'user';
 
-      // content pode ser string ou array de blocos (Anthropic format)
       if (typeof msg.content === 'string') {
         return { role, parts: [{ text: msg.content }] };
       }
@@ -43,12 +42,7 @@ export async function POST(req: NextRequest) {
           if (block.type === 'text' && block.text) {
             parts.push({ text: block.text });
           } else if (block.type === 'document' && block.source) {
-            parts.push({
-              inlineData: {
-                mimeType: block.source.media_type,
-                data: block.source.data,
-              },
-            });
+            parts.push({ inlineData: { mimeType: block.source.media_type, data: block.source.data } });
           }
         }
         return { role, parts: parts.length ? parts : [{ text: '' }] };
@@ -66,7 +60,7 @@ export async function POST(req: NextRequest) {
       },
     };
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent?key=${apiKey}`;
 
     const response = await fetch(url, {
       method: 'POST',
