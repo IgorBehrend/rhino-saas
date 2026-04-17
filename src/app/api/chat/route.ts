@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
 
   let body: {
     system?: string;
-    messages: { role: string; content: string }[];
+    messages: { role: string; content: unknown }[];
     max_tokens?: number;
   };
 
@@ -29,10 +29,33 @@ export async function POST(req: NextRequest) {
       ? { parts: [{ text: body.system }] }
       : undefined;
 
-    const contents = body.messages.map((msg) => ({
-      role: msg.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: msg.content }],
-    }));
+    const contents = body.messages.map((msg) => {
+      const role = msg.role === 'assistant' ? 'model' : 'user';
+
+      // content pode ser string ou array de blocos (Anthropic format)
+      if (typeof msg.content === 'string') {
+        return { role, parts: [{ text: msg.content }] };
+      }
+
+      if (Array.isArray(msg.content)) {
+        const parts: object[] = [];
+        for (const block of msg.content as { type: string; text?: string; source?: { data: string; media_type: string } }[]) {
+          if (block.type === 'text' && block.text) {
+            parts.push({ text: block.text });
+          } else if (block.type === 'document' && block.source) {
+            parts.push({
+              inlineData: {
+                mimeType: block.source.media_type,
+                data: block.source.data,
+              },
+            });
+          }
+        }
+        return { role, parts: parts.length ? parts : [{ text: '' }] };
+      }
+
+      return { role, parts: [{ text: String(msg.content) }] };
+    });
 
     const geminiBody = {
       systemInstruction,
