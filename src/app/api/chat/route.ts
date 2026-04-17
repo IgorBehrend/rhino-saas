@@ -14,9 +14,10 @@ export async function POST(req: NextRequest) {
 
   let body: {
     system?: string;
-    messages: { role: string; content: string | { type: string; text?: string; source?: { data: string; media_type: string } }[] }[];
+    messages: { role: string; content: string }[];
     max_tokens?: number;
   };
+
   try {
     body = await req.json();
   } catch {
@@ -28,30 +29,21 @@ export async function POST(req: NextRequest) {
       ? { parts: [{ text: body.system }] }
       : undefined;
 
-    const contents = body.messages.map((msg) => {
-      const role = msg.role === 'assistant' ? 'model' : 'user';
-      if (typeof msg.content === 'string') {
-        return { role, parts: [{ text: msg.content }] };
-      }
-      const parts: object[] = [];
-      for (const block of msg.content) {
-        if (block.type === 'text' && block.text) {
-          parts.push({ text: block.text });
-        } else if (block.type === 'document' && block.source) {
-          parts.push({ inlineData: { mimeType: block.source.media_type, data: block.source.data } });
-        }
-      }
-      return { role, parts };
-    });
+    const contents = body.messages.map((msg) => ({
+      role: msg.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: msg.content }],
+    }));
 
     const geminiBody = {
       systemInstruction,
       contents,
-      generationConfig: { maxOutputTokens: body.max_tokens ?? 4000, temperature: 0.3 },
+      generationConfig: {
+        maxOutputTokens: body.max_tokens ?? 4000,
+        temperature: 0.3,
+      },
     };
 
-    const model = 'gemini-2.0-flash';
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
     const response = await fetch(url, {
       method: 'POST',
@@ -61,15 +53,22 @@ export async function POST(req: NextRequest) {
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error('Gemini API error:', response.status, errText);
-      return NextResponse.json({ error: `Gemini retornou ${response.status}: ${errText}` }, { status: response.status });
+      console.error('Gemini error:', response.status, errText);
+      return NextResponse.json(
+        { error: `Gemini ${response.status}: ${errText}` },
+        { status: response.status }
+      );
     }
 
-    const geminiData = await response.json();
-    const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
     return NextResponse.json({ content: [{ type: 'text', text }] });
+
   } catch (err) {
-    console.error('Fetch error:', err);
-    return NextResponse.json({ error: 'Erro ao conectar com o Gemini.' }, { status: 500 });
+    console.error('Erro:', err);
+    return NextResponse.json(
+      { error: 'Erro ao conectar: ' + String(err) },
+      { status: 500 }
+    );
   }
 }
