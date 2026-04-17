@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from '@/lib/actions/auth';
-import { LayoutDashboard, Package, Factory, Ship, ShoppingCart, LogOut, ChevronRight, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Package, Factory, Ship, ShoppingCart, CalendarDays, LogOut, ChevronRight, Menu, X } from 'lucide-react';
 
 const NAV_ITEMS = [
   { href: '/dashboard',  label: 'Dashboard',    icon: LayoutDashboard },
@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { href: '/production', label: 'Produção',     icon: Factory },
   { href: '/imports',    label: 'Importações',  icon: Ship },
   { href: '/purchases',  label: 'Compras',      icon: ShoppingCart },
+  { href: '/feiras',     label: 'Feiras',       icon: CalendarDays },
 ];
 
 interface SidebarProps { userName?: string | null; }
