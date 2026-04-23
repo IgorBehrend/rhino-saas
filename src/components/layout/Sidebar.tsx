@@ -4,22 +4,28 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from '@/lib/actions/auth';
-import { LayoutDashboard, Package, Factory, Ship, ShoppingCart, CalendarDays, LogOut, ChevronRight, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Package, Factory, Ship, ShoppingCart, Users, Scissors, LogOut, ChevronRight, Menu, X } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { href: '/dashboard',  label: 'Dashboard',    icon: LayoutDashboard },
-  { href: '/machines',   label: 'Equipamentos', icon: Package },
-  { href: '/production', label: 'Produção',     icon: Factory },
-  { href: '/imports',    label: 'Importações',  icon: Ship },
-  { href: '/purchases',  label: 'Compras',      icon: ShoppingCart },
-  { href: '/feiras',     label: 'Feiras',       icon: CalendarDays },
+  { href: '/dashboard',      label: 'Dashboard',    icon: LayoutDashboard, roles: ['admin','manager','operator'] },
+  { href: '/machines',       label: 'Equipamentos', icon: Package,          roles: ['admin','manager','operator'] },
+  { href: '/production',     label: 'Producao',     icon: Factory,          roles: ['admin','manager','operator'] },
+  { href: '/imports',        label: 'Importacoes',  icon: Ship,             roles: ['admin','manager','operator'] },
+  { href: '/purchases',      label: 'Compras',      icon: ShoppingCart,     roles: ['admin','manager','operator'] },
+  { href: '/nesting',        label: 'Nesting CNC',  icon: Scissors,         roles: ['admin','manager','operator'] },
+  { href: '/settings/users', label: 'Usuarios',     icon: Users,            roles: ['admin','manager'] },
 ];
 
-interface SidebarProps { userName?: string | null; }
+interface SidebarProps {
+  userName?: string | null;
+  userRole?: string | null;
+}
 
-export default function Sidebar({ userName }: SidebarProps) {
+export default function Sidebar({ userName, userRole = 'operator' }: SidebarProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+
+  const visibleItems = NAV_ITEMS.filter(item => item.roles.includes(userRole ?? 'operator'));
 
   const NavContent = () => (
     <>
@@ -36,7 +42,7 @@ export default function Sidebar({ userName }: SidebarProps) {
 
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         <p className="px-3 text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: '#00562c' }}>Menu</p>
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+        {visibleItems.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + '/');
           return (
             <Link key={href} href={href} onClick={() => setOpen(false)}
@@ -59,8 +65,10 @@ export default function Sidebar({ userName }: SidebarProps) {
             {userName?.[0]?.toUpperCase() ?? 'U'}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium truncate text-white">{userName ?? 'Usuário'}</p>
-            <p className="text-xs" style={{ color: '#ffba00' }}>Operador</p>
+            <p className="text-sm font-medium truncate text-white">{userName ?? 'Usuario'}</p>
+            <p className="text-xs" style={{ color: '#ffba00' }}>
+              {userRole === 'admin' ? 'Admin' : userRole === 'manager' ? 'Gestor' : 'Operador'}
+            </p>
           </div>
         </div>
         <form action={signOut}>
@@ -76,7 +84,6 @@ export default function Sidebar({ userName }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile top bar */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 h-14 flex items-center px-4 gap-3" style={{ backgroundColor: '#001e0e', borderBottom: '1px solid #003a1d' }}>
         <button onClick={() => setOpen(true)} className="text-white"><Menu className="w-5 h-5" /></button>
         <div className="flex items-center gap-2">
@@ -84,8 +91,6 @@ export default function Sidebar({ userName }: SidebarProps) {
           <span className="text-white font-bold text-sm">RHINO CNC</span>
         </div>
       </div>
-
-      {/* Mobile overlay */}
       {open && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
           <div className="absolute inset-0 bg-black/50" onClick={() => setOpen(false)} />
@@ -94,8 +99,6 @@ export default function Sidebar({ userName }: SidebarProps) {
           </div>
         </div>
       )}
-
-      {/* Desktop sidebar */}
       <aside className="hidden lg:flex fixed inset-y-0 left-0 z-30 flex-col" style={{ width: 'var(--sidebar-width)', backgroundColor: '#001e0e', borderRight: '1px solid #003a1d' }}>
         <NavContent />
       </aside>
