@@ -493,8 +493,10 @@ function switchTab(name,el){
 ═══════════════════════════════════════ */
 function addMat(){
   var nome=document.getElementById('m-nome').value.trim();
-  var esp=parseFloat(document.getElementById('m-esp').value);
-  if(!nome||!esp){toast('Preencha nome e espessura','err');return;}
+  var espStr=document.getElementById('m-esp').value.replace(',','.');
+  var esp=parseFloat(espStr);
+  if(!nome){toast('Preencha o nome do material','err');return;}
+  if(!esp||isNaN(esp)||esp<=0){toast('Preencha a espessura (mm)','err');return;}
   materials.push({
     id:matId++,nome:nome,
     tipo:document.getElementById('m-tipo').value,
@@ -525,13 +527,19 @@ function refreshMatSel(){
 ═══════════════════════════════════════ */
 function addPeca(){
   var nome=document.getElementById('p-nome').value.trim();
-  var comp=parseFloat(document.getElementById('p-comp').value);
-  var larg=parseFloat(document.getElementById('p-larg').value);
+  var compStr=document.getElementById('p-comp').value.replace(',','.');
+  var largStr=document.getElementById('p-larg').value.replace(',','.');
+  var comp=parseFloat(compStr);
+  var larg=parseFloat(largStr);
   var qty=parseInt(document.getElementById('p-qty').value)||1;
-  var mid=parseInt(document.getElementById('p-mat').value);
-  if(!nome||!comp||!larg){toast('Preencha nome, comp. e larg.','err');return;}
-  if(!mid){toast('Selecione um material','err');return;}
-  var mat=materials.find(function(m){return m.id===mid});if(!mat)return;
+  var matVal=document.getElementById('p-mat').value;
+  var mid=matVal?parseInt(matVal):0;
+  if(!nome){toast('Preencha o nome da peca','err');return;}
+  if(!comp||isNaN(comp)||comp<=0){toast('Preencha o comprimento (mm)','err');return;}
+  if(!larg||isNaN(larg)||larg<=0){toast('Preencha a largura (mm)','err');return;}
+  if(!mid||isNaN(mid)){toast('Selecione um material','err');return;}
+  var mat=materials.find(function(m){return m.id===mid});
+  if(!mat){toast('Material nao encontrado','err');return;}
   var code='P'+(pieceId<10?'0':'')+pieceId;
   pieces.push({id:pieceId++,code:code,nome:nome,comp:comp,larg:larg,qty:qty,matId:mid,matNome:mat.nome,matTipo:mat.tipo,esp:mat.esp,
     edges:{t:false,b:false,l:false,r:false,tc:'#FF0000',bc:'#FF0000',lc:'#FF0000',rc:'#FF0000'}
