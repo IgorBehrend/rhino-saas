@@ -3,357 +3,328 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>CorteMaster v4 — RHINO CNC</title>
+<title>CorteMaster v5 — RHINO CNC</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;600&family=Syne:wght@400;500;700;800&display=swap" rel="stylesheet"/>
 <style>
-:root{
-  --bg:#0a0a0a;--bg2:#131313;--bg3:#1a1a1a;--bg4:#222;
-  --border:#252525;--border2:#2e2e2e;
-  --text:#f0ede8;--text2:#8a8580;--text3:#4a4845;
-  --accent:#c8f04a;--accent2:#a8d030;--accent3:rgba(200,240,74,.1);
-  --danger:#f04a4a;--warn:#f0a84a;--info:#4ab8f0;--purple:#a855f7;
-  --r:5px;--r2:8px;--r3:12px;
-  font-family:'Syne',sans-serif;
-}
+:root{--bg:#0a0a0a;--bg2:#131313;--bg3:#1a1a1a;--bg4:#222;--border:#252525;--border2:#2e2e2e;--text:#f0ede8;--text2:#8a8580;--text3:#4a4845;--accent:#c8f04a;--accent2:#a8d030;--danger:#f04a4a;--warn:#f0a84a;--info:#4ab8f0;--purple:#a855f7;--r:5px;--r2:8px;--r3:12px;font-family:'Syne',sans-serif}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{background:var(--bg);color:var(--text);height:100vh;overflow:hidden;font-size:13px}
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-track{background:var(--bg2)}
-::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
-
-/* LAYOUT */
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 .app{display:grid;grid-template-rows:48px 1fr;height:100vh}
-.topbar{display:flex;align-items:center;gap:0;border-bottom:1px solid var(--border);background:var(--bg);padding:0 16px;gap:12px;z-index:200}
-.logo{display:flex;align-items:center;gap:8px;margin-right:8px}
+.topbar{display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);background:var(--bg);padding:0 14px;z-index:200}
+.logo{display:flex;align-items:center;gap:8px;margin-right:4px}
 .lmark{width:28px;height:28px;background:var(--accent);border-radius:6px;display:grid;place-items:center}
 .lmark svg{width:16px;height:16px}
-.lname{font-size:15px;font-weight:800;letter-spacing:-.5px}
+.lname{font-size:14px;font-weight:800;letter-spacing:-.5px}
 .lver{font-size:9px;color:var(--accent);font-family:'DM Mono',monospace;font-weight:600}
-.tsep{width:1px;height:24px;background:var(--border2)}
+.tsep{width:1px;height:24px;background:var(--border2);flex-shrink:0}
 .tabs{display:flex;gap:2px}
-.tab{height:28px;padding:0 12px;border-radius:var(--r);font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;color:var(--text2);background:transparent;border:none;transition:all .15s;letter-spacing:.02em}
+.tab{height:28px;padding:0 10px;border-radius:var(--r);font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;color:var(--text2);background:transparent;border:none;transition:all .15s}
 .tab:hover{background:var(--bg3);color:var(--text)}
-.tab.active{background:var(--accent3);color:var(--accent);border:1px solid rgba(200,240,74,.2)}
-.tab svg{width:13px;height:13px}
+.tab.active{background:rgba(200,240,74,.1);color:var(--accent);border:1px solid rgba(200,240,74,.2)}
 .ml{margin-left:auto}
-.btn{height:28px;padding:0 12px;border-radius:var(--r);font-size:11px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);transition:all .15s;white-space:nowrap}
+.btn{height:28px;padding:0 10px;border-radius:var(--r);font-size:11px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);transition:all .15s;white-space:nowrap}
 .btn:hover{background:var(--bg4);color:var(--text)}
 .btn-a{background:var(--accent);color:#000;border-color:var(--accent)}
-.btn-a:hover{background:var(--accent2);border-color:var(--accent2);color:#000}
+.btn-a:hover{background:var(--accent2);color:#000}
 .btn-d{color:var(--danger);border-color:transparent;background:transparent}
 .btn-d:hover{background:rgba(240,74,74,.08)}
 .btn-sm{height:24px;padding:0 8px;font-size:10px}
 .btn-xs{height:20px;padding:0 6px;font-size:10px}
 .btn-icon{width:24px;padding:0;justify-content:center}
-
-/* CONTENT */
-.content{display:grid;grid-template-columns:240px 1fr 260px;height:calc(100vh - 48px);overflow:hidden}
-
-/* PANELS */
+.content{display:grid;grid-template-columns:240px 1fr 268px;height:calc(100vh - 48px);overflow:hidden}
 .panel{border-right:1px solid var(--border);background:var(--bg2);overflow-y:auto;display:flex;flex-direction:column}
 .panel-r{border-left:1px solid var(--border);border-right:none}
-.ph{padding:10px 14px 6px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.ph{padding:8px 12px 6px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .ph-title{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em}
-.psec{padding:10px 14px;border-bottom:1px solid var(--border)}
-.psec-title{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
-
-/* FORM ELEMENTS */
-.field{margin-bottom:7px}
-.field label{display:block;font-size:10px;color:var(--text2);margin-bottom:3px;font-weight:500}
-input[type=text],input[type=number],select,textarea{
-  width:100%;height:28px;background:var(--bg3);border:1px solid var(--border2);
-  border-radius:var(--r);color:var(--text);font-size:11px;padding:0 8px;
-  font-family:'Syne',sans-serif;outline:none;transition:border-color .15s;
-}
-input[type=text]:focus,input[type=number]:focus,select:focus,textarea:focus{border-color:var(--accent)}
+.psec{padding:8px 12px;border-bottom:1px solid var(--border)}
+.psec-title{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px}
+.field{margin-bottom:6px}
+.field label{display:block;font-size:10px;color:var(--text2);margin-bottom:2px;font-weight:500}
+input[type=text],input[type=number],select,textarea{width:100%;height:26px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-size:11px;padding:0 7px;font-family:'Syne',sans-serif;outline:none;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
 select option{background:var(--bg3)}
 input::placeholder{color:var(--text3)}
-textarea{height:52px;padding:6px 8px;resize:none}
-.frow{display:flex;gap:6px}
-.frow .field{flex:1}
-input[type=color]{width:100%;height:28px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg3);cursor:pointer;padding:2px}
-.chk{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);cursor:pointer;margin-bottom:5px}
-.chk input{width:14px;height:14px;accent-color:var(--accent);cursor:pointer}
-
-/* CANVAS AREA */
-.canvas-area{background:var(--bg);overflow:hidden;position:relative;display:flex;flex-direction:column}
-.canvas-toolbar{height:36px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;padding:0 12px;background:var(--bg2);flex-shrink:0}
-.canvas-wrap{flex:1;overflow:auto;position:relative}
-#sheet-canvas{position:relative;cursor:default}
-
-/* PIECE ON CANVAS */
-.piece-el{position:absolute;border:1.5px solid rgba(200,240,74,.4);background:rgba(200,240,74,.04);cursor:move;user-select:none;transition:border-color .15s;border-radius:2px}
-.piece-el:hover{border-color:var(--accent);z-index:10}
-.piece-el.selected{border-color:var(--accent);background:rgba(200,240,74,.08);z-index:20;box-shadow:0 0 0 2px rgba(200,240,74,.2)}
+textarea{height:48px;padding:5px 7px;resize:none}
+input[type=color]{width:100%;height:26px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg3);cursor:pointer;padding:2px 3px}
+.frow{display:flex;gap:5px}.frow .field{flex:1}
+.chk{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);cursor:pointer;margin-bottom:4px}
+.chk input[type=checkbox]{width:13px;height:13px;accent-color:var(--accent);cursor:pointer}
+/* CANVAS */
+.canvas-area{background:#080808;overflow:hidden;position:relative;display:flex;flex-direction:column}
+.canvas-tb{height:34px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:5px;padding:0 10px;background:var(--bg2);flex-shrink:0}
+.canvas-wrap{flex:1;overflow:auto;position:relative;cursor:default}
+#sheet-canvas{position:relative}
+.sheet-bg{position:absolute;background:#1c1c1c;border:1px solid #303030}
+.sheet-grid-dot{position:absolute;width:1px;height:1px;background:rgba(255,255,255,.06);pointer-events:none}
+.piece-el{position:absolute;border:1.5px solid rgba(200,240,74,.35);background:rgba(200,240,74,.03);cursor:move;user-select:none;border-radius:2px;transition:border-color .1s}
+.piece-el:hover{border-color:rgba(200,240,74,.7)}
+.piece-el.selected{border-color:var(--accent);background:rgba(200,240,74,.07);z-index:20;box-shadow:0 0 0 2px rgba(200,240,74,.15)}
 .piece-el.locked{border-color:var(--info);border-style:dashed;cursor:not-allowed}
-.piece-label{position:absolute;top:2px;left:3px;font-family:'DM Mono',monospace;font-size:9px;color:var(--accent);font-weight:600;pointer-events:none;line-height:1.2}
-.piece-dim{position:absolute;bottom:2px;right:3px;font-family:'DM Mono',monospace;font-size:8px;color:var(--text3);pointer-events:none}
-/* Edge tape indicators */
-.edge-t,.edge-b,.edge-l,.edge-r{position:absolute;pointer-events:none}
-.edge-t{top:0;left:0;right:0;height:4px;border-radius:2px 2px 0 0}
-.edge-b{bottom:0;left:0;right:0;height:4px;border-radius:0 0 2px 2px}
-.edge-l{top:0;left:0;bottom:0;width:4px;border-radius:2px 0 0 2px}
-.edge-r{top:0;right:0;bottom:0;width:4px;border-radius:0 2px 2px 0}
-/* Drill marks */
-.drill-mark{position:absolute;border-radius:50%;background:rgba(168,85,247,.6);border:1px solid var(--purple);pointer-events:none;transform:translate(-50%,-50%)}
-/* Sheet background */
-.sheet-bg{position:absolute;top:0;left:0;background:var(--bg3);border:1px solid var(--border2)}
-.sheet-label{position:absolute;font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);top:-16px;left:0}
-
-/* TAGS */
-.tag{display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:999px;font-size:9px;font-weight:700;font-family:'DM Mono',monospace}
-.tag-g{background:rgba(200,240,74,.12);color:var(--accent);border:1px solid rgba(200,240,74,.2)}
-.tag-r{background:rgba(240,74,74,.12);color:var(--danger);border:1px solid rgba(240,74,74,.2)}
-.tag-b{background:rgba(74,184,240,.12);color:var(--info);border:1px solid rgba(74,184,240,.2)}
-.tag-p{background:rgba(168,85,247,.12);color:var(--purple);border:1px solid rgba(168,85,247,.2)}
-
+.piece-el.snapping{border-color:#fff;box-shadow:0 0 0 1px rgba(255,255,255,.3)}
+.plabel{position:absolute;top:2px;left:3px;font-family:'DM Mono',monospace;font-size:9px;color:var(--accent);font-weight:600;pointer-events:none;line-height:1.2}
+.pdim{position:absolute;bottom:2px;right:3px;font-family:'DM Mono',monospace;font-size:8px;color:#444;pointer-events:none}
+.edge-t{position:absolute;top:0;left:0;right:0;height:5px;border-radius:1px 1px 0 0;pointer-events:none}
+.edge-b{position:absolute;bottom:0;left:0;right:0;height:5px;border-radius:0 0 1px 1px;pointer-events:none}
+.edge-l{position:absolute;top:5px;left:0;bottom:5px;width:5px;pointer-events:none}
+.edge-r{position:absolute;top:5px;right:0;bottom:5px;width:5px;pointer-events:none}
+.drill-mk{position:absolute;border-radius:50%;background:rgba(168,85,247,.5);border:1px solid var(--purple);pointer-events:none;transform:translate(-50%,-50%)}
+/* PIECE LIST */
+.pi{display:flex;align-items:center;gap:6px;padding:5px 10px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+.pi:hover{background:var(--bg3)}
+.pi.sel{background:rgba(200,240,74,.05)}
+.pi-code{font-family:'DM Mono',monospace;font-size:10px;color:var(--accent);font-weight:600;min-width:44px}
+.pi-name{font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pi-dim{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)}
+/* TOOL LIST */
+.tool-row{display:flex;align-items:center;gap:6px;padding:5px 10px;border-bottom:1px solid var(--border);font-size:11px}
+.tool-icon{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:9px;font-weight:700;flex-shrink:0}
+/* METRICS */
+.mbox{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:7px 10px;margin-bottom:5px}
+.mbox-l{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+.mbox-v{font-size:17px;font-weight:800;font-family:'DM Mono',monospace;color:var(--accent)}
 /* TOAST */
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--bg4);border:1px solid var(--border2);padding:8px 16px;border-radius:var(--r2);font-size:11px;font-weight:700;opacity:0;pointer-events:none;transition:all .2s;z-index:999;font-family:'DM Mono',monospace}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--bg4);border:1px solid var(--border2);padding:7px 14px;border-radius:var(--r2);font-size:11px;font-weight:700;opacity:0;pointer-events:none;transition:all .2s;z-index:999;font-family:'DM Mono',monospace}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.ok{border-color:var(--accent);color:var(--accent)}
 .toast.err{border-color:var(--danger);color:var(--danger)}
-
-/* PIECE LIST */
-.piece-item{display:flex;align-items:center;gap:6px;padding:6px 10px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
-.piece-item:hover{background:var(--bg3)}
-.piece-item.sel{background:var(--accent3)}
-.pi-code{font-family:'DM Mono',monospace;font-size:10px;color:var(--accent);font-weight:600;min-width:52px}
-.pi-name{font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pi-dim{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)}
-
-/* LABEL PRINT */
-.label-preview{background:white;border-radius:6px;padding:10px;margin:8px 0;position:relative;min-height:80px;border:1px solid var(--border2)}
-.label-edge{position:absolute;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700}
-.label-center{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:8px 20px}
-.label-code{font-family:'DM Mono',monospace;font-size:16px;font-weight:800;color:#000}
-.label-name{font-size:11px;color:#333;margin-top:2px}
-.label-dim{font-size:10px;color:#666;font-family:'DM Mono',monospace;margin-top:2px}
-
-/* DRILL CONFIG */
-.drill-row{display:flex;align-items:center;gap:6px;padding:5px 10px;border-bottom:1px solid var(--border);font-size:11px}
-.drill-dot{width:10px;height:10px;border-radius:50%;background:var(--purple);flex-shrink:0}
-
-/* ATC TOOL LIST */
-.tool-row{display:flex;align-items:center;gap:6px;padding:5px 10px;border-bottom:1px solid var(--border)}
-.tool-num{font-family:'DM Mono',monospace;font-size:10px;color:var(--accent);min-width:22px;font-weight:700}
-
-/* METRICS */
-.mbox{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;margin-bottom:6px}
-.mbox-l{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
-.mbox-v{font-size:18px;font-weight:800;font-family:'DM Mono',monospace;color:var(--accent)}
-
 /* MODAL */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:500;display:none;place-items:center}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:500;display:none;place-items:center}
 .modal-bg.open{display:grid}
-.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r3);width:520px;max-height:80vh;overflow-y:auto}
-.modal-h{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.modal-title{font-size:14px;font-weight:700}
-.modal-body{padding:16px 18px}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r3);width:580px;max-height:85vh;display:flex;flex-direction:column}
+.modal-h{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-title{font-size:13px;font-weight:700}
+.modal-body{padding:14px 16px;overflow-y:auto;flex:1}
+.modal-f{padding:10px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:6px;flex-shrink:0}
+/* PRINT */
+@media print{body{background:#fff;color:#000;overflow:visible;height:auto}.app,.topbar,.canvas-area,.panel,.panel-r{display:none}.print-only{display:block!important}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+.print-only{display:none}
 </style>
 </head>
 <body>
 <div class="toast" id="toast"></div>
 
-<!-- TOPBAR -->
 <div class="app">
 <div class="topbar">
   <div class="logo">
     <div class="lmark"><svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" fill="#000"/><rect x="9" y="1" width="6" height="3" rx="1" fill="#000"/><rect x="1" y="9" width="14" height="6" rx="1" fill="#000" opacity=".7"/></svg></div>
-    <div><div class="lname">CorteMaster</div><div class="lver">v4.0 · RHINO CNC</div></div>
+    <div><div class="lname">CorteMaster</div><div class="lver">v5.0 · RHINO CNC</div></div>
   </div>
   <div class="tsep"></div>
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('materiais',this)">
-      <svg viewBox="0 0 13 13" fill="none"><rect x="1" y="1" width="11" height="11" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1 5h11M5 1v11" stroke="currentColor" stroke-width="1.2"/></svg>
-      Materiais
-    </button>
-    <button class="tab" onclick="switchTab('pecas',this)">
-      <svg viewBox="0 0 13 13" fill="none"><rect x="1" y="1" width="5" height="8" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="7" y="4" width="5" height="8" rx="1" stroke="currentColor" stroke-width="1.2"/></svg>
-      Pecas
-    </button>
-    <button class="tab" onclick="switchTab('nesting',this)">
-      <svg viewBox="0 0 13 13" fill="none"><rect x="1" y="1" width="11" height="11" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="2.5" y="2.5" width="4" height="4" rx=".5" fill="currentColor" opacity=".5"/><rect x="2.5" y="7" width="8" height="3.5" rx=".5" fill="currentColor" opacity=".5"/></svg>
-      Nesting
-    </button>
-    <button class="tab" onclick="switchTab('etiquetas',this)">
-      <svg viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M4 5h5M4 7.5h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-      Etiquetas
-    </button>
-    <button class="tab" onclick="switchTab('furacao',this)">
-      <svg viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="2" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 1v2M6.5 10v2M1 6.5h2M10 6.5h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-      Furacao
-    </button>
-    <button class="tab" onclick="switchTab('atc',this)">
-      <svg viewBox="0 0 13 13" fill="none"><path d="M6.5 1L8 4h3.5L9 6l1 3.5L6.5 8 4 9.5 5 6 2.5 4H6L6.5 1z" stroke="currentColor" stroke-width="1.1"/></svg>
-      ATC
-    </button>
+    <button class="tab active" id="tb-mat" onclick="goTab('mat')">&#9632; Materiais</button>
+    <button class="tab" id="tb-pec" onclick="goTab('pec')">&#9632; Pecas</button>
+    <button class="tab" id="tb-nest" onclick="goTab('nest')">&#9632; Nesting</button>
+    <button class="tab" id="tb-tool" onclick="goTab('tool')">&#9632; Ferramentas</button>
+    <button class="tab" id="tb-drill" onclick="goTab('drill')">&#9632; Furacao</button>
+    <button class="tab" id="tb-label" onclick="goTab('label')">&#9632; Etiquetas</button>
   </div>
-  <div class="ml" style="display:flex;gap:6px">
+  <div class="ml" style="display:flex;gap:5px">
     <button class="btn" onclick="dlCSV()">CSV</button>
     <button class="btn" onclick="dlDXF()">DXF</button>
     <button class="btn btn-a" onclick="dlGcode()">G-code</button>
   </div>
 </div>
 
-<!-- CONTENT -->
 <div class="content">
-
-<!-- LEFT PANEL -->
+<!-- ═══════ LEFT PANEL ═══════ -->
 <div class="panel" id="left-panel">
-  <!-- MATERIAIS TAB -->
-  <div id="tab-materiais">
+
+  <!-- MAT -->
+  <div id="p-mat" style="display:flex;flex-direction:column">
     <div class="ph"><span class="ph-title">Materiais</span><button class="btn btn-a btn-sm" onclick="addMat()">+ Add</button></div>
     <div class="psec">
+      <div class="field"><label>Nome</label><input id="m-nome" placeholder="MDF 15mm"/></div>
       <div class="frow">
-        <div class="field"><label>Nome</label><input id="m-nome" placeholder="MDF 15mm"/></div>
-      </div>
-      <div class="frow">
-        <div class="field"><label>Tipo</label>
-          <select id="m-tipo"><option>MDF</option><option>Compensado</option><option>Madeira</option><option>ACM</option><option>OSB</option></select>
-        </div>
+        <div class="field"><label>Tipo</label><select id="m-tipo"><option>MDF</option><option>Compensado</option><option>Madeira</option><option>ACM</option><option>OSB</option><option>Outro</option></select></div>
         <div class="field"><label>Esp (mm)</label><input id="m-esp" type="number" placeholder="15" style="width:60px"/></div>
       </div>
       <div class="frow">
-        <div class="field"><label>Comp (mm)</label><input id="m-cw" type="number" value="2750"/></div>
-        <div class="field"><label>Larg (mm)</label><input id="m-ch" type="number" value="1850"/></div>
+        <div class="field"><label>Comp chapa</label><input id="m-cw" type="number" value="2750"/></div>
+        <div class="field"><label>Larg chapa</label><input id="m-ch" type="number" value="1850"/></div>
       </div>
-      <div class="field"><label>R$/chapa</label><input id="m-custo" type="number" placeholder="180" step="0.01"/></div>
+      <div class="field"><label>R$ / chapa</label><input id="m-custo" type="number" placeholder="0" step="0.01"/></div>
     </div>
     <div id="mat-list" style="flex:1;overflow-y:auto"></div>
   </div>
 
-  <!-- PECAS TAB -->
-  <div id="tab-pecas" style="display:none">
+  <!-- PEC -->
+  <div id="p-pec" style="display:none;flex-direction:column">
     <div class="ph"><span class="ph-title">Pecas</span><button class="btn btn-a btn-sm" onclick="addPeca()">+ Add</button></div>
     <div class="psec">
-      <div class="field"><label>Nome da peca</label><input id="p-nome" placeholder="Lateral"/></div>
+      <div class="field"><label>Nome</label><input id="pc-nome" placeholder="Lateral esquerda"/></div>
       <div class="frow">
-        <div class="field"><label>Comp (mm)</label><input id="p-comp" type="number" placeholder="600"/></div>
-        <div class="field"><label>Larg (mm)</label><input id="p-larg" type="number" placeholder="400"/></div>
-        <div class="field"><label>Qtd</label><input id="p-qty" type="number" value="1" min="1" style="width:50px"/></div>
+        <div class="field"><label>Comp (mm)</label><input id="pc-comp" type="number" placeholder="600"/></div>
+        <div class="field"><label>Larg (mm)</label><input id="pc-larg" type="number" placeholder="300"/></div>
+        <div class="field"><label>Qtd</label><input id="pc-qty" type="number" value="1" min="1" style="width:44px"/></div>
       </div>
-      <div class="field"><label>Material</label><select id="p-mat"><option value="">- selecione -</option></select></div>
+      <div class="field"><label>Material</label><select id="pc-mat"><option value="">- selecione -</option></select></div>
     </div>
     <div id="peca-list" style="flex:1;overflow-y:auto"></div>
-    <div class="psec" style="margin-top:auto">
+    <div class="psec">
       <div class="frow">
-        <div class="mbox" style="flex:1"><div class="mbox-l">Total pecas</div><div class="mbox-v" id="s-total">0</div></div>
-        <div class="mbox" style="flex:1"><div class="mbox-l">Area</div><div class="mbox-v" id="s-area" style="font-size:13px">0m²</div></div>
+        <div class="mbox" style="flex:1"><div class="mbox-l">Total</div><div class="mbox-v" id="s-total">0</div></div>
+        <div class="mbox" style="flex:1"><div class="mbox-l">Area</div><div class="mbox-v" id="s-area" style="font-size:12px">0m²</div></div>
+        <div class="mbox" style="flex:1"><div class="mbox-l">Custo</div><div class="mbox-v" id="s-custo" style="font-size:12px">R$0</div></div>
       </div>
-      <div class="mbox"><div class="mbox-l">Custo estimado</div><div class="mbox-v" id="s-custo">R$0</div></div>
     </div>
   </div>
 
-  <!-- ETIQUETAS TAB -->
-  <div id="tab-etiquetas" style="display:none">
-    <div class="ph"><span class="ph-title">Config. Etiquetas</span></div>
+  <!-- NEST CONFIG -->
+  <div id="p-nest" style="display:none;flex-direction:column">
+    <div class="ph"><span class="ph-title">Config. Nesting</span></div>
     <div class="psec">
-      <div class="psec-title">Fita de borda por lado</div>
-      <div class="frow" style="margin-bottom:4px">
-        <div class="field"><label>Topo</label><input type="color" id="edge-t-color" value="#ffffff" oninput="updateEdgePreview()"/></div>
-        <div class="field"><label>Base</label><input type="color" id="edge-b-color" value="#ffffff" oninput="updateEdgePreview()"/></div>
+      <div class="psec-title">Distancias</div>
+      <div class="frow">
+        <div class="field"><label>Folga entre pecas (mm)</label><input id="n-gap" type="number" value="6" min="0"/></div>
+        <div class="field"><label>Margem borda (mm)</label><input id="n-margin" type="number" value="10" min="0"/></div>
       </div>
-      <div class="frow" style="margin-bottom:4px">
-        <div class="field"><label>Esq.</label><input type="color" id="edge-l-color" value="#ffffff" oninput="updateEdgePreview()"/></div>
-        <div class="field"><label>Dir.</label><input type="color" id="edge-r-color" value="#ffffff" oninput="updateEdgePreview()"/></div>
-      </div>
-      <div class="frow" style="margin-bottom:4px">
-        <div class="chk"><input type="checkbox" id="edge-t-on" onchange="updateEdgePreview()"/><label>Topo</label></div>
-        <div class="chk"><input type="checkbox" id="edge-b-on" onchange="updateEdgePreview()"/><label>Base</label></div>
-        <div class="chk"><input type="checkbox" id="edge-l-on" onchange="updateEdgePreview()"/><label>Esq.</label></div>
-        <div class="chk"><input type="checkbox" id="edge-r-on" onchange="updateEdgePreview()"/><label>Dir.</label></div>
-      </div>
+      <div class="field"><label>Snap ao mover (mm)</label><input id="n-snap" type="number" value="1" min="0" step="1"/></div>
+      <div class="chk"><input type="checkbox" id="n-rotate" checked/><label>Permitir rotacao 90°</label></div>
+      <div class="chk"><input type="checkbox" id="n-snap-pieces" checked/><label>Snap automatico entre pecas</label></div>
     </div>
     <div class="psec">
-      <div class="psec-title">Campos da etiqueta</div>
-      <div class="chk"><input type="checkbox" id="lbl-code" checked/><label>Codigo da peca</label></div>
-      <div class="chk"><input type="checkbox" id="lbl-name" checked/><label>Nome da peca</label></div>
-      <div class="chk"><input type="checkbox" id="lbl-dim" checked/><label>Dimensoes</label></div>
-      <div class="chk"><input type="checkbox" id="lbl-mat" checked/><label>Material</label></div>
-      <div class="chk"><input type="checkbox" id="lbl-sheet"/><label>N° da chapa</label></div>
-      <div class="chk"><input type="checkbox" id="lbl-qty"/><label>Quantidade</label></div>
-      <div class="field" style="margin-top:6px"><label>Campo livre</label><input id="lbl-custom" placeholder="Ex: Cliente / Projeto"/></div>
+      <div class="psec-title">Resultados</div>
+      <div class="mbox"><div class="mbox-l">Pecas</div><div class="mbox-v" id="n-pecas">-</div></div>
+      <div class="mbox"><div class="mbox-l">Chapas usadas</div><div class="mbox-v" id="n-chapas">-</div></div>
+      <div class="mbox"><div class="mbox-l">Aproveitamento</div><div class="mbox-v" id="n-aprov">-</div></div>
+      <div class="mbox"><div class="mbox-l">Custo total</div><div class="mbox-v" id="n-custo">-</div></div>
     </div>
     <div class="psec">
-      <button class="btn btn-a" style="width:100%" onclick="printLabels()">Imprimir etiquetas</button>
+      <button class="btn btn-a" style="width:100%" onclick="runNesting()">&#9654; Otimizar nesting</button>
     </div>
   </div>
 
-  <!-- FURACAO TAB -->
-  <div id="tab-furacao" style="display:none">
-    <div class="ph"><span class="ph-title">Configuracao de Furacao</span></div>
+  <!-- TOOLS -->
+  <div id="p-tool" style="display:none;flex-direction:column">
+    <div class="ph"><span class="ph-title">Ferramentas</span><button class="btn btn-a btn-sm" onclick="addTool()">+ Add</button></div>
+    <div class="psec">
+      <div class="field"><label>Nome / descricao</label><input id="t-nome" placeholder="Fresa 6mm espiral"/></div>
+      <div class="frow">
+        <div class="field"><label>Tipo</label><select id="t-tipo"><option>Fresa corte</option><option>Fresa rasgo</option><option>Broca VB</option><option>Broca dobradica</option><option>Fresa chanfro</option><option>Fresa arredondamento</option><option>Fresa gravacao</option></select></div>
+        <div class="field"><label>Diam (mm)</label><input id="t-diam" type="number" placeholder="6" step="0.5" style="width:60px"/></div>
+      </div>
+      <div class="frow">
+        <div class="field"><label>RPM</label><input id="t-rpm" type="number" value="18000"/></div>
+        <div class="field"><label>Avanco (mm/min)</label><input id="t-avanco" type="number" value="3000"/></div>
+      </div>
+      <div class="frow">
+        <div class="field"><label>Passada (mm)</label><input id="t-passada" type="number" value="3" step="0.5"/></div>
+        <div class="field"><label>Prof max (mm)</label><input id="t-profmax" type="number" value="50"/></div>
+      </div>
+      <div class="frow">
+        <div class="field"><label>Slot ATC</label><input id="t-slot" type="number" placeholder="1" min="1" style="width:50px"/></div>
+        <div class="field"><label>Cor</label><input type="color" id="t-cor" value="#c8f04a"/></div>
+      </div>
+    </div>
+    <div id="tool-list" style="flex:1;overflow-y:auto"></div>
+  </div>
+
+  <!-- DRILL CONFIG -->
+  <div id="p-drill" style="display:none;flex-direction:column">
+    <div class="ph"><span class="ph-title">Furacao</span></div>
+    <div class="psec">
+      <div class="psec-title">Selecionar chapa e peca</div>
+      <div class="field"><label>Chapa</label>
+        <select id="dr-sheet" onchange="updateDrillPieceList()"><option value="">- otimize primeiro -</option></select>
+      </div>
+      <div class="field"><label>Peca</label>
+        <select id="dr-piece"><option value="">- selecione -</option></select>
+      </div>
+    </div>
     <div class="psec">
       <div class="psec-title">Tipo de furacao</div>
       <div class="field"><label>Tipo</label>
-        <select id="drill-type" onchange="updateDrillParams()">
+        <select id="dr-type" onchange="updateDrillPreset()">
           <option value="vb">VB (confirmacao)</option>
-          <option value="dobradica">Dobradica (35mm)</option>
-          <option value="gaveta">Rasgo de gaveta</option>
+          <option value="dobradica">Dobradica 35mm</option>
+          <option value="gaveta">Rasgo gaveta</option>
+          <option value="canal">Canal / ranhura</option>
           <option value="custom">Personalizado</option>
         </select>
       </div>
-      <div id="drill-params">
-        <div class="frow">
-          <div class="field"><label>Diam. fresa (mm)</label><input id="dr-diam" type="number" value="8" step="0.5"/></div>
-          <div class="field"><label>Prof. (mm)</label><input id="dr-prof" type="number" value="10" step="0.5"/></div>
-        </div>
-        <div class="frow">
-          <div class="field"><label>Dist. borda X</label><input id="dr-x" type="number" value="37"/></div>
-          <div class="field"><label>Dist. borda Y</label><input id="dr-y" type="number" value="37"/></div>
-        </div>
-        <div class="field"><label>Padrao</label>
-          <select id="dr-pattern">
-            <option value="single">Unico</option>
-            <option value="row-x">Linha horizontal</option>
-            <option value="row-y">Linha vertical</option>
-            <option value="corners">4 cantos</option>
-            <option value="dobradica">Dobradica (2x)</option>
-          </select>
-        </div>
-        <div id="drill-extra"></div>
+      <div class="frow">
+        <div class="field"><label>Ferramenta</label><select id="dr-tool"><option value="">-</option></select></div>
       </div>
-      <button class="btn btn-a" style="width:100%;margin-top:6px" onclick="applyDrillToSelected()">Aplicar na peca selecionada</button>
+      <div class="frow">
+        <div class="field"><label>Diam (mm)</label><input id="dr-diam" type="number" value="8" step="0.5"/></div>
+        <div class="field"><label>Prof (mm)</label><input id="dr-prof" type="number" value="10" step="0.5"/></div>
+      </div>
+      <div class="frow">
+        <div class="field"><label>Dist X borda</label><input id="dr-x" type="number" value="37"/></div>
+        <div class="field"><label>Dist Y borda</label><input id="dr-y" type="number" value="37"/></div>
+      </div>
+      <div class="field"><label>Padrao</label>
+        <select id="dr-pat">
+          <option value="single">Unico</option>
+          <option value="corners">4 cantos</option>
+          <option value="dobradica">Dobradica (2 furos)</option>
+          <option value="row-x">Linha horizontal</option>
+          <option value="row-y">Linha vertical</option>
+        </select>
+      </div>
+      <div id="dr-spacing-row" style="display:none">
+        <div class="field"><label>Espacamento (mm)</label><input id="dr-spacing" type="number" value="64"/></div>
+      </div>
+      <button class="btn btn-a" style="width:100%;margin-top:4px" onclick="applyDrill()">Aplicar furacao</button>
     </div>
-    <div class="ph" style="margin-top:8px"><span class="ph-title">Furacoes aplicadas</span></div>
-    <div id="drill-list" style="flex:1;overflow-y:auto">
-      <div style="padding:12px;font-size:10px;color:var(--text3);text-align:center">Selecione uma peca para ver furacoes</div>
+    <div class="ph"><span class="ph-title">Furacoes aplicadas</span></div>
+    <div id="drill-applied" style="flex:1;overflow-y:auto">
+      <div style="padding:12px;font-size:10px;color:var(--text3);text-align:center">Selecione uma peca</div>
     </div>
   </div>
 
-  <!-- ATC TAB -->
-  <div id="tab-atc" style="display:none">
-    <div class="ph"><span class="ph-title">Troca Automatica de Ferr.</span></div>
+  <!-- LABELS CONFIG -->
+  <div id="p-label" style="display:none;flex-direction:column">
+    <div class="ph"><span class="ph-title">Configuracao Etiquetas</span></div>
     <div class="psec">
-      <div class="chk"><input type="checkbox" id="atc-enabled" onchange="toggleATC()"/><label>Habilitar ATC</label></div>
-      <div id="atc-config" style="display:none">
-        <div class="field" style="margin-top:6px"><label>N° de posicoes</label><input id="atc-slots" type="number" value="8" min="1" max="24" onchange="renderATCSlots()"/></div>
-        <div class="psec-title" style="margin-top:8px">Ferramentas por posicao</div>
-        <div id="atc-slots-list"></div>
-        <button class="btn" style="width:100%;margin-top:6px" onclick="addATCOp()">+ Adicionar operacao</button>
+      <div class="psec-title">Campos da etiqueta</div>
+      <div class="chk"><input type="checkbox" id="lf-code" checked/><label>Codigo</label></div>
+      <div class="chk"><input type="checkbox" id="lf-name" checked/><label>Nome da peca</label></div>
+      <div class="chk"><input type="checkbox" id="lf-dim" checked/><label>Dimensoes (mm)</label></div>
+      <div class="chk"><input type="checkbox" id="lf-mat" checked/><label>Material / espessura</label></div>
+      <div class="chk"><input type="checkbox" id="lf-sheet"/><label>N° da chapa</label></div>
+      <div class="chk"><input type="checkbox" id="lf-pos"/><label>Posicao X/Y na chapa</label></div>
+      <div class="chk"><input type="checkbox" id="lf-qty"/><label>Quantidade total</label></div>
+      <div class="field"><label>Campo livre (cliente / projeto)</label><input id="lf-custom" placeholder="Ex: Cozinha - Sr. Silva"/></div>
+    </div>
+    <div class="psec">
+      <div class="psec-title">Fita de borda padrao</div>
+      <div class="frow">
+        <div class="field"><label>Topo</label><input type="color" id="eg-t" value="#e53e3e"/></div>
+        <div class="field"><label>Base</label><input type="color" id="eg-b" value="#e53e3e"/></div>
+        <div class="field"><label>Esq</label><input type="color" id="eg-l" value="#e53e3e"/></div>
+        <div class="field"><label>Dir</label><input type="color" id="eg-r" value="#e53e3e"/></div>
+      </div>
+      <div class="frow">
+        <div class="chk"><input type="checkbox" id="eg-t-on"/><label>Topo</label></div>
+        <div class="chk"><input type="checkbox" id="eg-b-on"/><label>Base</label></div>
+        <div class="chk"><input type="checkbox" id="eg-l-on"/><label>Esq</label></div>
+        <div class="chk"><input type="checkbox" id="eg-r-on"/><label>Dir</label></div>
       </div>
     </div>
-    <div class="ph"><span class="ph-title">Ordem de operacoes</span></div>
-    <div id="atc-ops" style="flex:1;overflow-y:auto">
-      <div style="padding:12px;font-size:10px;color:var(--text3);text-align:center">Habilite o ATC e adicione operacoes</div>
+    <div class="psec">
+      <button class="btn btn-a" style="width:100%;margin-bottom:5px" onclick="openLabels()">&#128437; Gerar etiquetas (por qtd)</button>
+      <button class="btn" style="width:100%;margin-bottom:5px" onclick="openReport()">&#128196; Relatorio de pecas</button>
+      <button class="btn" style="width:100%" onclick="openSheetPDF()">&#128444; PDF layout chapas</button>
     </div>
   </div>
-</div>
 
-<!-- CENTER CANVAS -->
+</div><!-- /left -->
+
+<!-- ═══════ CENTER CANVAS ═══════ -->
 <div class="canvas-area">
-  <div class="canvas-toolbar">
-    <span style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace" id="sheet-info">Chapa 1</span>
+  <div class="canvas-tb">
+    <span id="sh-info" style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;min-width:140px">Nenhuma chapa</span>
     <div class="tsep"></div>
-    <button class="btn btn-sm" onclick="prevSheet()">&#8592;</button>
-    <span style="font-size:11px;font-family:'DM Mono',monospace;min-width:60px;text-align:center" id="sheet-nav-label">1 / 1</span>
-    <button class="btn btn-sm" onclick="nextSheet()">&#8594;</button>
+    <button class="btn btn-sm" onclick="prevSh()">&#8592;</button>
+    <span id="sh-nav" style="font-size:11px;font-family:'DM Mono',monospace;min-width:50px;text-align:center">-/-</span>
+    <button class="btn btn-sm" onclick="nextSh()">&#8594;</button>
     <div class="tsep"></div>
-    <button class="btn btn-sm" onclick="zoomIn()">+</button>
-    <span id="zoom-label" style="font-size:10px;font-family:'DM Mono',monospace;min-width:36px;text-align:center">100%</span>
-    <button class="btn btn-sm" onclick="zoomOut()">-</button>
-    <button class="btn btn-sm" onclick="zoomFit()">Fit</button>
-    <div class="tsep"></div>
-    <button class="btn btn-a btn-sm" onclick="runNesting()">&#9654; Otimizar</button>
+    <button class="btn btn-sm" onclick="zIn()">+</button>
+    <span id="z-lbl" style="font-size:10px;font-family:'DM Mono',monospace;min-width:34px;text-align:center">100%</span>
+    <button class="btn btn-sm" onclick="zOut()">−</button>
+    <button class="btn btn-sm" onclick="zFit()">Fit</button>
     <div class="tsep"></div>
     <span id="sel-info" style="font-size:10px;color:var(--text2);font-family:'DM Mono',monospace"></span>
   </div>
@@ -362,760 +333,620 @@ input[type=color]{width:100%;height:28px;border:1px solid var(--border2);border-
   </div>
 </div>
 
-<!-- RIGHT PANEL -->
-<div class="panel panel-r" id="right-panel">
+<!-- ═══════ RIGHT PANEL ═══════ -->
+<div class="panel panel-r">
   <div class="ph"><span class="ph-title">Propriedades</span></div>
-
-  <!-- No selection -->
-  <div id="prop-empty" class="psec">
-    <div style="font-size:10px;color:var(--text3);text-align:center;padding:16px 0">Clique em uma peca para editar</div>
-    <div class="psec-title">Resultado nesting</div>
-    <div class="frow">
-      <div class="mbox" style="flex:1"><div class="mbox-l">Pecas</div><div class="mbox-v" id="n-pecas">-</div></div>
-      <div class="mbox" style="flex:1"><div class="mbox-l">Chapas</div><div class="mbox-v" id="n-chapas">-</div></div>
-    </div>
-    <div class="mbox"><div class="mbox-l">Aproveitamento</div><div class="mbox-v" id="n-aprov">-</div></div>
-    <div class="mbox"><div class="mbox-l">Custo total</div><div class="mbox-v" id="n-custo">-</div></div>
+  <div id="rp-empty" class="psec" style="font-size:10px;color:var(--text3);text-align:center;padding:20px 12px">
+    Clique numa peca no canvas para editar
   </div>
-
-  <!-- Piece properties -->
-  <div id="prop-piece" style="display:none">
+  <div id="rp-piece" style="display:none">
     <div class="psec">
       <div class="psec-title">Identificacao</div>
-      <div class="field"><label>Codigo</label><input id="pp-code" oninput="updateSelPiece('code',this.value)"/></div>
-      <div class="field"><label>Nome</label><input id="pp-name" oninput="updateSelPiece('nome',this.value)"/></div>
+      <div class="frow">
+        <div class="field"><label>Codigo</label><input id="rp-code" oninput="upSel('code',this.value)"/></div>
+        <div class="field"><label>Qtd nesting</label><input id="rp-qty" type="number" min="1" oninput="upSel('qty',+this.value)" style="width:52px"/></div>
+      </div>
+      <div class="field"><label>Nome</label><input id="rp-name" oninput="upSel('nome',this.value)"/></div>
     </div>
     <div class="psec">
-      <div class="psec-title">Dimensoes</div>
+      <div class="psec-title">Posicao e dimensao</div>
       <div class="frow">
-        <div class="field"><label>Comp (mm)</label><input id="pp-comp" type="number" oninput="updateSelPiece('comp',+this.value)"/></div>
-        <div class="field"><label>Larg (mm)</label><input id="pp-larg" type="number" oninput="updateSelPiece('larg',+this.value)"/></div>
+        <div class="field"><label>Comp (mm)</label><input id="rp-comp" type="number" oninput="upSel('comp',+this.value);renderCanvas()"/></div>
+        <div class="field"><label>Larg (mm)</label><input id="rp-larg" type="number" oninput="upSel('larg',+this.value);renderCanvas()"/></div>
       </div>
       <div class="frow">
-        <div class="field"><label>X (mm)</label><input id="pp-x" type="number" oninput="updateSelPiece('px',+this.value)"/></div>
-        <div class="field"><label>Y (mm)</label><input id="pp-y" type="number" oninput="updateSelPiece('py',+this.value)"/></div>
+        <div class="field"><label>X (mm)</label><input id="rp-x" type="number" oninput="upSel('px',+this.value);renderCanvas()"/></div>
+        <div class="field"><label>Y (mm)</label><input id="rp-y" type="number" oninput="upSel('py',+this.value);renderCanvas()"/></div>
       </div>
-      <div class="chk"><input type="checkbox" id="pp-rot" onchange="toggleRot()"/><label>Girar 90°</label></div>
-      <div class="chk"><input type="checkbox" id="pp-lock" onchange="toggleLock()"/><label>Travar posicao</label></div>
+      <div class="frow">
+        <div class="chk"><input type="checkbox" id="rp-rot" onchange="doRot()"/><label>Girar 90°</label></div>
+        <div class="chk"><input type="checkbox" id="rp-lock" onchange="doLock()"/><label>Travar</label></div>
+      </div>
     </div>
     <div class="psec">
-      <div class="psec-title">Fita de borda</div>
+      <div class="psec-title">Fita de borda (individual)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:6px">
+        <div></div>
+        <div class="field"><label style="font-size:9px;text-align:center">Topo</label><input type="color" id="re-t" style="height:22px"/></div>
+        <div></div>
+        <div class="field"><label style="font-size:9px;text-align:center">Esq</label><input type="color" id="re-l" style="height:22px"/></div>
+        <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--text3)">PECA</div>
+        <div class="field"><label style="font-size:9px;text-align:center">Dir</label><input type="color" id="re-r" style="height:22px"/></div>
+        <div></div>
+        <div class="field"><label style="font-size:9px;text-align:center">Base</label><input type="color" id="re-b" style="height:22px"/></div>
+        <div></div>
+      </div>
       <div class="frow">
-        <div style="display:grid;grid-template-rows:1fr 1fr 1fr;grid-template-columns:1fr 1fr 1fr;gap:4px;width:100%">
-          <div></div>
-          <div class="field"><label style="font-size:9px">Topo</label><input type="color" id="pe-t" style="height:22px"/></div>
-          <div></div>
-          <div class="field"><label style="font-size:9px">Esq</label><input type="color" id="pe-l" style="height:22px"/></div>
-          <div style="background:var(--bg3);border-radius:3px;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--text3)">PECA</div>
-          <div class="field"><label style="font-size:9px">Dir</label><input type="color" id="pe-r" style="height:22px"/></div>
-          <div></div>
-          <div class="field"><label style="font-size:9px">Base</label><input type="color" id="pe-b" style="height:22px"/></div>
-          <div></div>
-        </div>
+        <div class="chk"><input type="checkbox" id="re-t-on" onchange="upEdge()"/><label>Topo</label></div>
+        <div class="chk"><input type="checkbox" id="re-b-on" onchange="upEdge()"/><label>Base</label></div>
+        <div class="chk"><input type="checkbox" id="re-l-on" onchange="upEdge()"/><label>Esq</label></div>
+        <div class="chk"><input type="checkbox" id="re-r-on" onchange="upEdge()"/><label>Dir</label></div>
       </div>
-      <div class="frow" style="margin-top:4px">
-        <div class="chk"><input type="checkbox" id="pe-t-on" onchange="updateEdgesOnPiece()"/><label>Topo</label></div>
-        <div class="chk"><input type="checkbox" id="pe-b-on" onchange="updateEdgesOnPiece()"/><label>Base</label></div>
-        <div class="chk"><input type="checkbox" id="pe-l-on" onchange="updateEdgesOnPiece()"/><label>Esq</label></div>
-        <div class="chk"><input type="checkbox" id="pe-r-on" onchange="updateEdgesOnPiece()"/><label>Dir</label></div>
-      </div>
-      <button class="btn btn-sm" style="width:100%;margin-top:4px" onclick="applyGlobalEdges()">Aplicar config. global</button>
+      <button class="btn btn-sm" style="width:100%;margin-top:4px" onclick="applyGlobalEdge()">Aplicar padrao global</button>
     </div>
     <div class="psec">
       <div class="psec-title">Furacoes nesta peca</div>
-      <div id="pp-drills" style="max-height:120px;overflow-y:auto"></div>
-      <button class="btn btn-sm" style="width:100%;margin-top:4px" onclick="switchTab('furacao',document.querySelector('[onclick*=furacao]'))">Gerenciar furacoes</button>
+      <div id="rp-drills" style="max-height:100px;overflow-y:auto;font-size:10px;color:var(--text3)">Nenhuma</div>
     </div>
     <div class="psec">
-      <button class="btn btn-d btn-sm" style="width:100%" onclick="removeSelected()">Remover peca da chapa</button>
+      <button class="btn btn-d btn-sm" style="width:100%" onclick="removeSelected()">Remover do nesting</button>
     </div>
   </div>
 </div>
+</div>
+</div>
 
-</div><!-- /content -->
-</div><!-- /app -->
-
-<!-- PRINT MODAL -->
-<div class="modal-bg" id="label-modal">
+<!-- LABEL MODAL -->
+<div class="modal-bg" id="modal-labels">
   <div class="modal">
-    <div class="modal-h">
-      <span class="modal-title">Etiquetas para impressao</span>
-      <button class="btn btn-sm" onclick="document.getElementById('label-modal').classList.remove('open')">Fechar</button>
-    </div>
-    <div class="modal-body" id="label-modal-body"></div>
-    <div style="padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:6px">
-      <button class="btn" onclick="document.getElementById('label-modal').classList.remove('open')">Cancelar</button>
-      <button class="btn btn-a" onclick="window.print()">Imprimir</button>
-    </div>
+    <div class="modal-h"><span class="modal-title">Etiquetas — 1 por quantidade</span><button class="btn btn-sm" onclick="closeModal('modal-labels')">Fechar</button></div>
+    <div class="modal-body" id="labels-body"></div>
+    <div class="modal-f"><button class="btn" onclick="closeModal('modal-labels')">Cancelar</button><button class="btn btn-a" onclick="printModal()">&#128437; Imprimir</button></div>
+  </div>
+</div>
+
+<!-- REPORT MODAL -->
+<div class="modal-bg" id="modal-report">
+  <div class="modal" style="width:640px">
+    <div class="modal-h"><span class="modal-title">Relatorio de Pecas</span><button class="btn btn-sm" onclick="closeModal('modal-report')">Fechar</button></div>
+    <div class="modal-body" id="report-body"></div>
+    <div class="modal-f"><button class="btn" onclick="closeModal('modal-report')">Cancelar</button><button class="btn btn-a" onclick="printModal()">&#128444; Imprimir / PDF</button></div>
+  </div>
+</div>
+
+<!-- SHEET PDF MODAL -->
+<div class="modal-bg" id="modal-sheet-pdf">
+  <div class="modal" style="width:680px">
+    <div class="modal-h"><span class="modal-title">Layout das Chapas (PDF)</span><button class="btn btn-sm" onclick="closeModal('modal-sheet-pdf')">Fechar</button></div>
+    <div class="modal-body" id="sheet-pdf-body"></div>
+    <div class="modal-f"><button class="btn" onclick="closeModal('modal-sheet-pdf')">Cancelar</button><button class="btn btn-a" onclick="printModal()">&#128444; Imprimir / PDF</button></div>
   </div>
 </div>
 
 <script>
-/* ═══════════════════════════════════════
-   STATE
-═══════════════════════════════════════ */
-var materials=[],pieces=[],nested=[];
-var matId=1,pieceId=1,nestId=1;
-var selectedId=null;
-var currentSheet=0,totalSheets=1;
-var zoom=1;
-var atcTools=[],atcOps=[];
-var drillOps={}; // pieceId -> [{type,x,y,diam,prof,pattern}]
-var SCALE=0.12; // mm to px base
+/* ══════════════════════════ STATE ══════════════════════════ */
+var MAT=[],PEC=[],NEST=[],TOOLS=[],DRILLS={};
+var matId=1,pecId=1,nestId=1,toolId=1;
+var selId=null,curSh=0,totSh=1,zoom=1;
+var SCALE=0.12;
+var MAT_COL={MDF:'#4a9e5c',Compensado:'#c87c2a',Madeira:'#4a7ec8',ACM:'#c84a4a',OSB:'#8a4ac8',Outro:'#6b7280'};
 
-var matColors={MDF:'#4a9e5c',Compensado:'#c87c2a',Madeira:'#4a7ec8',ACM:'#c84a4a',OSB:'#8a4ac8'};
+/* ══════════════════════════ UTILS ══════════════════════════ */
+function toast(m,t){var el=document.getElementById('toast');el.textContent=m;el.className='toast show'+(t?' '+t:'');clearTimeout(el._t);el._t=setTimeout(function(){el.className='toast'},2200);}
+function getV(id){return document.getElementById(id).value;}
+function setV(id,v){document.getElementById(id).value=v;}
+function getN(id){return parseFloat(getV(id).replace(',','.'))||0;}
+function getI(id){return parseInt(getV(id))||0;}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function printModal(){window.print();}
 
-/* ═══════════════════════════════════════
-   TOAST
-═══════════════════════════════════════ */
-function toast(msg,type){
-  var t=document.getElementById('toast');
-  t.textContent=msg;t.className='toast show'+(type?' '+type:'');
-  clearTimeout(t._t);t._t=setTimeout(function(){t.className='toast'},2000);
-}
-
-/* ═══════════════════════════════════════
-   TABS
-═══════════════════════════════════════ */
-function switchTab(name,el){
-  var tabs=['materiais','pecas','etiquetas','furacao','atc'];
-  tabs.forEach(function(t){document.getElementById('tab-'+t).style.display='none'});
-  document.getElementById('tab-'+name).style.display='flex';
-  document.getElementById('tab-'+name).style.flexDirection='column';
-  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
-  if(el)el.classList.add('active');
-  if(name==='pecas')refreshMatSel();
-  if(name==='furacao')renderDrillList();
-}
-
-/* ═══════════════════════════════════════
-   MATERIAIS
-═══════════════════════════════════════ */
-function addMat(){
-  var nome=document.getElementById('m-nome').value.trim();
-  var espStr=document.getElementById('m-esp').value.replace(',','.');
-  var esp=parseFloat(espStr);
-  if(!nome){toast('Preencha o nome do material','err');return;}
-  if(!esp||isNaN(esp)||esp<=0){toast('Preencha a espessura (mm)','err');return;}
-  materials.push({
-    id:matId++,nome:nome,
-    tipo:document.getElementById('m-tipo').value,
-    esp:esp,
-    cw:parseFloat(document.getElementById('m-cw').value)||2750,
-    ch:parseFloat(document.getElementById('m-ch').value)||1850,
-    custo:parseFloat(document.getElementById('m-custo').value)||0
+/* ══════════════════════════ TABS ══════════════════════════ */
+var TABS=['mat','pec','nest','tool','drill','label'];
+function goTab(t){
+  TABS.forEach(function(x){
+    document.getElementById('p-'+x).style.display='none';
+    document.getElementById('tb-'+x).classList.remove('active');
   });
-  document.getElementById('m-nome').value='';document.getElementById('m-esp').value='';
+  document.getElementById('p-'+t).style.display='flex';
+  document.getElementById('p-'+t).style.flexDirection='column';
+  document.getElementById('tb-'+t).classList.add('active');
+  if(t==='pec')refreshMatSel();
+  if(t==='drill'){updateDrillSheetList();refreshToolSel();}
+  if(t==='tool')renderToolSel();
+}
+
+/* ══════════════════════════ MATERIALS ══════════════════════════ */
+function addMat(){
+  var nome=getV('m-nome').trim();
+  var esp=getN('m-esp');
+  if(!nome){toast('Informe o nome do material','err');return;}
+  if(!esp||esp<=0){toast('Informe a espessura','err');return;}
+  MAT.push({id:matId++,nome:nome,tipo:getV('m-tipo'),esp:esp,cw:getN('m-cw')||2750,ch:getN('m-ch')||1850,custo:getN('m-custo')});
+  setV('m-nome','');setV('m-esp','');
   renderMats();refreshMatSel();toast('Material adicionado','ok');
 }
-function delMat(id){materials=materials.filter(function(m){return m.id!==id});renderMats();refreshMatSel();}
+function delMat(id){MAT=MAT.filter(function(m){return m.id!==id});renderMats();refreshMatSel();}
 function renderMats(){
   var el=document.getElementById('mat-list');
-  if(!materials.length){el.innerHTML='<div style="padding:16px;font-size:10px;color:var(--text3);text-align:center">Nenhum material</div>';return;}
-  el.innerHTML=materials.map(function(m){
-    return '<div class="piece-item"><div class="pi-code">'+m.tipo.substring(0,4)+'</div><div class="pi-name">'+m.nome+'</div><div class="pi-dim">'+m.esp+'mm</div><button class="btn btn-d btn-xs btn-icon" onclick="delMat('+m.id+')">✕</button></div>';
-  }).join('');
+  if(!MAT.length){el.innerHTML='<div style="padding:14px;font-size:10px;color:var(--text3);text-align:center">Nenhum material</div>';return;}
+  el.innerHTML=MAT.map(function(m){return'<div class="pi"><div class="pi-code">'+m.tipo.substring(0,4)+'</div><div class="pi-name">'+m.nome+'</div><div class="pi-dim">'+m.esp+'mm</div><button class="btn btn-d btn-xs btn-icon" onclick="delMat('+m.id+')">&#10005;</button></div>';}).join('');
 }
 function refreshMatSel(){
-  var sel=document.getElementById('p-mat');var cur=sel.value;
-  sel.innerHTML='<option value="">- selecione -</option>'+materials.map(function(m){return'<option value="'+m.id+'">'+m.nome+' ('+m.esp+'mm)</option>';}).join('');
-  sel.value=cur;
+  var s=document.getElementById('pc-mat');var cur=s.value;
+  s.innerHTML='<option value="">- selecione -</option>'+MAT.map(function(m){return'<option value="'+m.id+'">'+m.nome+' ('+m.esp+'mm)</option>';}).join('');
+  s.value=cur;
 }
 
-/* ═══════════════════════════════════════
-   PECAS
-═══════════════════════════════════════ */
+/* ══════════════════════════ PIECES ══════════════════════════ */
 function addPeca(){
-  var nome=document.getElementById('p-nome').value.trim();
-  var compStr=document.getElementById('p-comp').value.replace(',','.');
-  var largStr=document.getElementById('p-larg').value.replace(',','.');
-  var comp=parseFloat(compStr);
-  var larg=parseFloat(largStr);
-  var qty=parseInt(document.getElementById('p-qty').value)||1;
-  var matVal=document.getElementById('p-mat').value;
-  var mid=matVal?parseInt(matVal):0;
-  if(!nome){toast('Preencha o nome da peca','err');return;}
-  if(!comp||isNaN(comp)||comp<=0){toast('Preencha o comprimento (mm)','err');return;}
-  if(!larg||isNaN(larg)||larg<=0){toast('Preencha a largura (mm)','err');return;}
+  var nome=getV('pc-nome').trim();
+  var comp=getN('pc-comp');
+  var larg=getN('pc-larg');
+  var qty=getI('pc-qty')||1;
+  var mid=parseInt(getV('pc-mat'));
+  if(!nome){toast('Informe o nome da peca','err');return;}
+  if(!comp||comp<=0){toast('Informe o comprimento','err');return;}
+  if(!larg||larg<=0){toast('Informe a largura','err');return;}
   if(!mid||isNaN(mid)){toast('Selecione um material','err');return;}
-  var mat=materials.find(function(m){return m.id===mid});
+  var mat=MAT.find(function(m){return m.id===mid});
   if(!mat){toast('Material nao encontrado','err');return;}
-  var code='P'+(pieceId<10?'0':'')+pieceId;
-  pieces.push({id:pieceId++,code:code,nome:nome,comp:comp,larg:larg,qty:qty,matId:mid,matNome:mat.nome,matTipo:mat.tipo,esp:mat.esp,
-    edges:{t:false,b:false,l:false,r:false,tc:'#FF0000',bc:'#FF0000',lc:'#FF0000',rc:'#FF0000'}
-  });
-  document.getElementById('p-nome').value='';document.getElementById('p-comp').value='';document.getElementById('p-larg').value='';
-  renderPecas();updateSmry();toast('Peca adicionada','ok');
+  var code='P'+(pecId<10?'0':'')+pecId;
+  PEC.push({id:pecId++,code:code,nome:nome,comp:comp,larg:larg,qty:qty,matId:mid,matNome:mat.nome,matTipo:mat.tipo,esp:mat.esp,
+    edges:{t:false,b:false,l:false,r:false,tc:'#e53e3e',bc:'#e53e3e',lc:'#e53e3e',rc:'#e53e3e'}});
+  setV('pc-nome','');setV('pc-comp','');setV('pc-larg','');
+  renderPecs();updateSmry();toast('Peca adicionada','ok');
 }
-function delPeca(id){pieces=pieces.filter(function(p){return p.id!==id});nested=nested.filter(function(n){return n.pieceId!==id});renderPecas();updateSmry();renderCanvas();}
-function renderPecas(){
+function delPec(id){PEC=PEC.filter(function(p){return p.id!==id});NEST=NEST.filter(function(n){return n.pecId!==id});renderPecs();updateSmry();renderCanvas();}
+function renderPecs(){
   var el=document.getElementById('peca-list');
-  if(!pieces.length){el.innerHTML='<div style="padding:16px;font-size:10px;color:var(--text3);text-align:center">Nenhuma peca</div>';return;}
-  el.innerHTML=pieces.map(function(p){
-    return '<div class="piece-item" onclick="selectPieceById('+p.id+')"><div class="pi-code">'+p.code+'</div><div class="pi-name">'+p.nome+' x'+p.qty+'</div><div class="pi-dim">'+p.comp+'x'+p.larg+'</div><button class="btn btn-d btn-xs btn-icon" onclick="event.stopPropagation();delPeca('+p.id+')">✕</button></div>';
-  }).join('');
+  if(!PEC.length){el.innerHTML='<div style="padding:14px;font-size:10px;color:var(--text3);text-align:center">Nenhuma peca</div>';return;}
+  el.innerHTML=PEC.map(function(p){return'<div class="pi" onclick="selPecById('+p.id+')"><div class="pi-code">'+p.code+'</div><div class="pi-name">'+p.nome+' x'+p.qty+'</div><div class="pi-dim">'+p.comp+'x'+p.larg+'</div><button class="btn btn-d btn-xs btn-icon" onclick="event.stopPropagation();delPec('+p.id+')">&#10005;</button></div>';}).join('');
 }
 function updateSmry(){
-  var tq=pieces.reduce(function(s,p){return s+p.qty},0);
-  var ta=pieces.reduce(function(s,p){return s+(p.comp*p.larg*p.qty/1e6)},0);
-  var cu=0;pieces.forEach(function(p){var m=materials.find(function(m){return m.id===p.matId});if(m&&m.custo>0){var ca=m.cw*m.ch/1e6;cu+=m.custo*(p.comp*p.larg*p.qty/1e6)/ca;}});
-  document.getElementById('s-total').textContent=tq;
-  document.getElementById('s-area').textContent=ta.toFixed(1)+'m²';
+  var tq=PEC.reduce(function(s,p){return s+p.qty},0);
+  var ta=PEC.reduce(function(s,p){return s+(p.comp*p.larg*p.qty/1e6)},0);
+  var cu=0;PEC.forEach(function(p){var m=MAT.find(function(m){return m.id===p.matId});if(m&&m.custo>0){cu+=m.custo*(p.comp*p.larg*p.qty/1e6)/(m.cw*m.ch/1e6);}});
+  setV('s-total',tq);
+  document.getElementById('s-area').textContent=ta.toFixed(2)+'m²';
   document.getElementById('s-custo').textContent='R$'+cu.toFixed(0);
 }
 
-/* ═══════════════════════════════════════
-   NESTING ENGINE
-═══════════════════════════════════════ */
+/* ══════════════════════════ TOOLS ══════════════════════════ */
+function addTool(){
+  var nome=getV('t-nome').trim();
+  var diam=getN('t-diam');
+  if(!nome){toast('Informe o nome da ferramenta','err');return;}
+  if(!diam||diam<=0){toast('Informe o diametro','err');return;}
+  TOOLS.push({id:toolId++,nome:nome,tipo:getV('t-tipo'),diam:diam,rpm:getN('t-rpm')||18000,avanco:getN('t-avanco')||3000,passada:getN('t-passada')||3,profmax:getN('t-profmax')||50,slot:getI('t-slot')||toolId,cor:getV('t-cor')||'#c8f04a'});
+  setV('t-nome','');setV('t-diam','');
+  renderTools();refreshToolSel();toast('Ferramenta adicionada','ok');
+}
+function delTool(id){TOOLS=TOOLS.filter(function(t){return t.id!==id});renderTools();refreshToolSel();}
+function renderTools(){
+  var el=document.getElementById('tool-list');
+  if(!TOOLS.length){el.innerHTML='<div style="padding:14px;font-size:10px;color:var(--text3);text-align:center">Nenhuma ferramenta cadastrada</div>';return;}
+  el.innerHTML=TOOLS.map(function(t){return'<div class="tool-row"><div class="tool-icon" style="background:'+t.cor+'20;border:1px solid '+t.cor+'40;color:'+t.cor+'">T'+t.slot+'</div><div style="flex:1"><div style="font-size:11px">'+t.nome+'</div><div style="font-size:9px;color:var(--text3)">'+t.tipo+' · &#8960;'+t.diam+'mm · '+t.rpm+'RPM · '+t.avanco+'mm/min</div></div><button class="btn btn-d btn-xs btn-icon" onclick="delTool('+t.id+')">&#10005;</button></div>';}).join('');
+}
+function refreshToolSel(){
+  var s=document.getElementById('dr-tool');
+  s.innerHTML='<option value="">- selecionar ferramenta -</option>'+TOOLS.map(function(t){return'<option value="'+t.id+'">T'+t.slot+' — '+t.nome+' (&#8960;'+t.diam+'mm)</option>';}).join('');
+}
+function renderToolSel(){renderTools();}
+
+/* ══════════════════════════ NESTING ══════════════════════════ */
 function runNesting(){
-  if(!pieces.length){toast('Adicione pecas antes','err');return;}
-  var prevLocked=nested.filter(function(n){return n.locked}).map(function(n){return Object.assign({},n)});
-  nested=[];nestId=1;
+  if(!PEC.length){toast('Adicione pecas antes','err');return;}
+  var prevLocked=NEST.filter(function(n){return n.locked}).map(function(n){return Object.assign({},n)});
+  NEST=[];nestId=1;
+  var gap=getN('n-gap')||6;
+  var margin=getN('n-margin')||10;
   var byMat={};
-  pieces.forEach(function(p){
+  PEC.forEach(function(p){
     for(var q=0;q<p.qty;q++){
       var k=p.matId;if(!byMat[k])byMat[k]=[];
-      byMat[k].push({id:nestId++,pieceId:p.id,code:p.code,nome:p.nome,comp:p.comp,larg:p.larg,
-        matId:p.matId,matNome:p.matNome,matTipo:p.matTipo,esp:p.esp,
-        edges:Object.assign({},p.edges),
-        rotated:false,locked:false,sheet:0,px:0,py:0,sheetW:0,sheetH:0,matCusto:0
-      });
+      byMat[k].push({id:nestId++,pecId:p.id,code:p.code,nome:p.nome,comp:p.comp,larg:p.larg,matId:p.matId,matNome:p.matNome,matTipo:p.matTipo,esp:p.esp,edges:JSON.parse(JSON.stringify(p.edges)),rotated:false,locked:false,sheet:0,px:margin,py:margin,sheetW:0,sheetH:0,matCusto:0});
     }
   });
-  var sheetCount=0;
-  var folga=6;
+  var shCount=0;
   Object.keys(byMat).forEach(function(mid){
-    var mat=materials.find(function(m){return m.id==mid})||{cw:2750,ch:1850,custo:0};
+    var mat=MAT.find(function(m){return m.id==mid})||{cw:2750,ch:1850,custo:0};
     var SW=mat.cw,SH=mat.ch;
     var items=byMat[mid].sort(function(a,b){return b.larg-a.larg});
-    var sheetIdx=sheetCount;
-    var x=folga,y=folga,rowH=0;
+    var shIdx=shCount;
+    var x=margin,y=margin,rowH=0;
     items.forEach(function(item){
-      var prev=prevLocked.find(function(l){return l.code===item.code&&l.matId==mid});
+      var prev=prevLocked.find(function(l){return l.code===item.code&&l.matId==mid&&l.locked});
       if(prev){item.px=prev.px;item.py=prev.py;item.sheet=prev.sheet;item.comp=prev.comp;item.larg=prev.larg;item.rotated=prev.rotated;item.locked=true;}
       else{
-        if(x+item.comp+folga>SW-folga){x=folga;y+=rowH+folga;rowH=0;}
-        if(y+item.larg+folga>SH-folga){x=folga;y=folga;rowH=0;sheetCount++;sheetIdx=sheetCount;}
-        item.px=x;item.py=y;item.sheet=sheetIdx;
-        x+=item.comp+folga;if(item.larg>rowH)rowH=item.larg;
+        if(x+item.comp+gap>SW-margin){x=margin;y+=rowH+gap;rowH=0;}
+        if(y+item.larg+gap>SH-margin){x=margin;y=margin;rowH=0;shCount++;shIdx=shCount;}
+        item.px=x;item.py=y;item.sheet=shIdx;
+        x+=item.comp+gap;if(item.larg>rowH)rowH=item.larg;
       }
       item.sheetW=SW;item.sheetH=SH;item.matCusto=mat.custo;
-      nested.push(item);
+      NEST.push(item);
     });
-    sheetCount++;
+    shCount++;
   });
-  totalSheets=sheetCount||1;currentSheet=0;
-  updateNestingStats();
-  renderCanvas();
-  toast('Nesting gerado — '+nested.length+' pecas em '+totalSheets+' chapas','ok');
+  totSh=shCount||1;curSh=0;
+  updateStats();renderCanvas();updateDrillSheetList();
+  toast('Nesting OK — '+NEST.length+' pecas em '+totSh+' chapa(s)','ok');
 }
 
-function updateNestingStats(){
-  var ta=nested.reduce(function(s,n){return s+n.comp*n.larg/1e6},0);
-  var sw=nested[0]?nested[0].sheetW:2750,sh=nested[0]?nested[0].sheetH:1850;
-  var sa=totalSheets*sw*sh/1e6;
+function updateStats(){
+  var ta=NEST.reduce(function(s,n){return s+n.comp*n.larg/1e6},0);
+  var sw=NEST[0]?NEST[0].sheetW:2750,sh=NEST[0]?NEST[0].sheetH:1850;
+  var sa=totSh*sw*sh/1e6;
   var aprov=sa>0?(ta/sa*100).toFixed(1):0;
-  var custo=0;nested.forEach(function(n){if(n.matCusto>0){var ca=n.sheetW*n.sheetH/1e6;custo+=n.matCusto*(n.comp*n.larg/1e6)/ca;}});
-  document.getElementById('n-pecas').textContent=nested.length;
-  document.getElementById('n-chapas').textContent=totalSheets;
+  var custo=0;NEST.forEach(function(n){if(n.matCusto>0){custo+=n.matCusto*(n.comp*n.larg/1e6)/(n.sheetW*n.sheetH/1e6);}});
+  document.getElementById('n-pecas').textContent=NEST.length;
+  document.getElementById('n-chapas').textContent=totSh;
   document.getElementById('n-aprov').textContent=aprov+'%';
   document.getElementById('n-custo').textContent='R$'+custo.toFixed(0);
-  document.getElementById('sheet-nav-label').textContent=(currentSheet+1)+' / '+totalSheets;
-  var shItems=nested.filter(function(n){return n.sheet===currentSheet});
-  document.getElementById('sheet-info').textContent='Chapa '+(currentSheet+1)+' — '+(shItems[0]?shItems[0].sheetW+'x'+shItems[0].sheetH+'mm':'');
+  document.getElementById('sh-nav').textContent=(curSh+1)+'/'+totSh;
+  var items=NEST.filter(function(n){return n.sheet===curSh});
+  document.getElementById('sh-info').textContent='Chapa '+(curSh+1)+(items[0]?' · '+items[0].sheetW+'x'+items[0].sheetH+'mm':'');
 }
 
-/* ═══════════════════════════════════════
-   CANVAS RENDER
-═══════════════════════════════════════ */
-function getScale(){return SCALE*zoom;}
-
+/* ══════════════════════════ CANVAS ══════════════════════════ */
+function sc(){return SCALE*zoom;}
 function renderCanvas(){
   var canvas=document.getElementById('sheet-canvas');
   canvas.innerHTML='';
-  if(!nested.length){canvas.style.width='800px';canvas.style.height='600px';return;}
-
-  var items=nested.filter(function(n){return n.sheet===currentSheet});
-  if(!items.length){canvas.style.width='800px';canvas.style.height='600px';return;}
-
-  var sc=getScale();
+  if(!NEST.length){canvas.style.width='600px';canvas.style.height='400px';return;}
+  var items=NEST.filter(function(n){return n.sheet===curSh});
+  if(!items.length){canvas.style.width='600px';canvas.style.height='400px';return;}
+  var s=sc(),pad=40;
   var SW=items[0].sheetW,SH=items[0].sheetH;
-  var pad=32;
-  canvas.style.width=(SW*sc+pad*2)+'px';
-  canvas.style.height=(SH*sc+pad*2)+'px';
-
+  canvas.style.width=(SW*s+pad*2)+'px';
+  canvas.style.height=(SH*s+pad*2)+'px';
   // Sheet bg
-  var bg=document.createElement('div');
-  bg.className='sheet-bg';
+  var bg=document.createElement('div');bg.className='sheet-bg';
   bg.style.left=pad+'px';bg.style.top=pad+'px';
-  bg.style.width=(SW*sc)+'px';bg.style.height=(SH*sc)+'px';
-  var lbl=document.createElement('div');
-  lbl.className='sheet-label';
-  lbl.textContent='Chapa '+(currentSheet+1)+' — '+SW+'x'+SH+'mm — '+(items[0].matNome||'');
-  bg.appendChild(lbl);
+  bg.style.width=(SW*s)+'px';bg.style.height=(SH*s)+'px';
+  var info=document.createElement('div');
+  info.style.cssText='position:absolute;top:-18px;left:0;font-size:9px;color:var(--text3);font-family:DM Mono,monospace';
+  info.textContent='Chapa '+(curSh+1)+' — '+SW+'x'+SH+'mm — '+(items[0].matNome||'');
+  bg.appendChild(info);
   canvas.appendChild(bg);
-
-  // Grid dots
-  var gsize=50*sc;
-  for(var gx=0;gx<SW*sc;gx+=gsize){
-    for(var gy=0;gy<SH*sc;gy+=gsize){
-      var dot=document.createElement('div');
-      dot.style.cssText='position:absolute;width:2px;height:2px;border-radius:50%;background:rgba(255,255,255,.04);left:'+(pad+gx)+'px;top:'+(pad+gy)+'px;pointer-events:none';
-      canvas.appendChild(dot);
-    }
-  }
-
+  // Grid
+  var gs=50*s;
+  for(var gx=0;gx<SW*s;gx+=gs){for(var gy=0;gy<SH*s;gy+=gs){var d=document.createElement('div');d.style.cssText='position:absolute;width:1px;height:1px;border-radius:50%;background:rgba(255,255,255,.05);left:'+(pad+gx)+'px;top:'+(pad+gy)+'px;pointer-events:none';canvas.appendChild(d);}}
   // Pieces
   items.forEach(function(n){
     var el=document.createElement('div');
-    el.className='piece-el'+(n.id===selectedId?' selected':'')+(n.locked?' locked':'');
-    el.id='piece-'+n.id;
-    el.style.left=(pad+n.px*sc)+'px';
-    el.style.top=(pad+n.py*sc)+'px';
-    el.style.width=(n.comp*sc)+'px';
-    el.style.height=(n.larg*sc)+'px';
-
+    el.className='piece-el'+(n.id===selId?' selected':'')+(n.locked?' locked':'');
+    el.id='n-'+n.id;
+    el.style.left=(pad+n.px*s)+'px';el.style.top=(pad+n.py*s)+'px';
+    el.style.width=(n.comp*s)+'px';el.style.height=(n.larg*s)+'px';
+    el.style.background=MAT_COL[n.matTipo]?MAT_COL[n.matTipo]+'08':'rgba(200,240,74,.03)';
     // Edge tapes
-    var sides=['t','b','l','r'];
-    sides.forEach(function(s){
-      if(n.edges&&n.edges[s]){
-        var edgeEl=document.createElement('div');
-        edgeEl.className='edge-'+s;
-        edgeEl.style.background=n.edges[s+'c']||'#FF0000';
-        edgeEl.style.opacity='.85';
-        el.appendChild(edgeEl);
+    ['t','b','l','r'].forEach(function(side){
+      if(n.edges&&n.edges[side]){
+        var e=document.createElement('div');e.className='edge-'+side;
+        e.style.background=n.edges[side+'c']||'#e53e3e';e.style.opacity='.9';
+        el.appendChild(e);
       }
     });
-
-    // Label
-    var lbl=document.createElement('div');lbl.className='piece-label';
-    lbl.textContent=n.code;
-    el.appendChild(lbl);
-    var dim=document.createElement('div');dim.className='piece-dim';
-    dim.textContent=n.comp+'x'+n.larg;
-    el.appendChild(dim);
-
-    // Drill marks
-    if(drillOps[n.pieceId]){
-      drillOps[n.pieceId].forEach(function(d){
-        var dm=document.createElement('div');
-        dm.className='drill-mark';
-        var r=Math.max(3,(d.diam/2)*sc);
-        dm.style.width=(r*2)+'px';dm.style.height=(r*2)+'px';
-        dm.style.left=(d.x*sc)+'px';dm.style.top=(d.y*sc)+'px';
-        el.appendChild(dm);
-      });
-    }
-
-    // Drag
-    if(!n.locked)makeDraggable(el,n);
-    el.addEventListener('click',function(e){e.stopPropagation();selectNested(n.id);});
+    var lbl=document.createElement('div');lbl.className='plabel';lbl.textContent=n.code;el.appendChild(lbl);
+    var dim=document.createElement('div');dim.className='pdim';dim.textContent=n.comp+'x'+n.larg;el.appendChild(dim);
+    // Drills
+    if(DRILLS[n.pecId]){DRILLS[n.pecId].forEach(function(d){
+      var dm=document.createElement('div');dm.className='drill-mk';
+      var r=Math.max(3,(d.diam/2)*s);dm.style.width=(r*2)+'px';dm.style.height=(r*2)+'px';dm.style.left=(d.x*s)+'px';dm.style.top=(d.y*s)+'px';
+      el.appendChild(dm);
+    });}
+    if(!n.locked)makeDrag(el,n,SW,SH,pad);
+    el.addEventListener('click',function(e){e.stopPropagation();selNest(n.id);});
     canvas.appendChild(el);
   });
-
-  document.getElementById('sheet-nav-label').textContent=(currentSheet+1)+' / '+totalSheets;
+  updateStats();
 }
 
-/* ═══════════════════════════════════════
-   DRAG AND DROP
-═══════════════════════════════════════ */
-function makeDraggable(el,n){
-  var startX,startY,startPx,startPy;
+/* ══════════════════════════ DRAG WITH SNAP ══════════════════════════ */
+function makeDrag(el,n,SW,SH,pad){
   el.addEventListener('mousedown',function(e){
-    if(e.button!==0)return;
-    e.preventDefault();
-    startX=e.clientX;startY=e.clientY;
-    startPx=n.px;startPy=n.py;
-    var sc=getScale();
-    function onMove(ev){
-      var dx=(ev.clientX-startX)/sc;
-      var dy=(ev.clientY-startY)/sc;
-      n.px=Math.max(0,Math.round(startPx+dx));
-      n.py=Math.max(0,Math.round(startPy+dy));
-      var pad=32;
-      el.style.left=(pad+n.px*sc)+'px';
-      el.style.top=(pad+n.py*sc)+'px';
-      if(selectedId===n.id){
-        document.getElementById('pp-x').value=n.px;
-        document.getElementById('pp-y').value=n.py;
+    if(e.button!==0)return;e.preventDefault();
+    var s=sc();
+    var ox=e.clientX-n.px*s,oy=e.clientY-n.py*s;
+    var snapGrid=getN('n-snap')||1;
+    var doSnap=document.getElementById('n-snap-pieces').checked;
+    var gap=getN('n-gap')||6;
+    el.classList.add('snapping');
+    function mv(ev){
+      var rawX=(ev.clientX-ox)/s;
+      var rawY=(ev.clientY-oy)/s;
+      // Snap to grid
+      var nx=Math.round(rawX/snapGrid)*snapGrid;
+      var ny=Math.round(rawY/snapGrid)*snapGrid;
+      // Boundary
+      nx=Math.max(0,Math.min(SW-n.comp,nx));
+      ny=Math.max(0,Math.min(SH-n.larg,ny));
+      // Snap to other pieces
+      if(doSnap){
+        var others=NEST.filter(function(x){return x.id!==n.id&&x.sheet===curSh});
+        var snapD=gap+2;
+        others.forEach(function(o){
+          // Right of other
+          if(Math.abs(nx-(o.px+o.comp+gap))<snapD)nx=o.px+o.comp+gap;
+          // Left of other
+          if(Math.abs(nx+n.comp-(o.px-gap))<snapD)nx=o.px-gap-n.comp;
+          // Below other
+          if(Math.abs(ny-(o.py+o.larg+gap))<snapD)ny=o.py+o.larg+gap;
+          // Above other
+          if(Math.abs(ny+n.larg-(o.py-gap))<snapD)ny=o.py-gap-n.larg;
+          // Align tops
+          if(Math.abs(ny-o.py)<snapD)ny=o.py;
+          // Align lefts
+          if(Math.abs(nx-o.px)<snapD)nx=o.px;
+        });
       }
+      n.px=nx;n.py=ny;
+      el.style.left=(pad+n.px*s)+'px';el.style.top=(pad+n.py*s)+'px';
+      if(selId===n.id){setV('rp-x',Math.round(n.px));setV('rp-y',Math.round(n.py));}
     }
-    function onUp(){
-      document.removeEventListener('mousemove',onMove);
-      document.removeEventListener('mouseup',onUp);
-      renderCanvas();
-    }
-    document.addEventListener('mousemove',onMove);
-    document.addEventListener('mouseup',onUp);
+    function up(){el.classList.remove('snapping');document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);}
+    document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
   });
 }
 
-/* ═══════════════════════════════════════
-   SELECTION
-═══════════════════════════════════════ */
-function selectNested(id){
-  selectedId=id;
-  var n=nested.find(function(x){return x.id===id});
-  if(!n){clearSelection();return;}
-  document.getElementById('prop-empty').style.display='none';
-  document.getElementById('prop-piece').style.display='block';
-  document.getElementById('pp-code').value=n.code;
-  document.getElementById('pp-name').value=n.nome;
-  document.getElementById('pp-comp').value=n.comp;
-  document.getElementById('pp-larg').value=n.larg;
-  document.getElementById('pp-x').value=Math.round(n.px);
-  document.getElementById('pp-y').value=Math.round(n.py);
-  document.getElementById('pp-rot').checked=n.rotated;
-  document.getElementById('pp-lock').checked=n.locked;
-  // Edges
-  document.getElementById('pe-t').value=n.edges.tc||'#FF0000';
-  document.getElementById('pe-b').value=n.edges.bc||'#FF0000';
-  document.getElementById('pe-l').value=n.edges.lc||'#FF0000';
-  document.getElementById('pe-r').value=n.edges.rc||'#FF0000';
-  document.getElementById('pe-t-on').checked=!!n.edges.t;
-  document.getElementById('pe-b-on').checked=!!n.edges.b;
-  document.getElementById('pe-l-on').checked=!!n.edges.l;
-  document.getElementById('pe-r-on').checked=!!n.edges.r;
+/* ══════════════════════════ SELECTION ══════════════════════════ */
+function selNest(id){
+  selId=id;var n=NEST.find(function(x){return x.id===id});if(!n){clearSel();return;}
+  document.getElementById('rp-empty').style.display='none';
+  document.getElementById('rp-piece').style.display='block';
+  setV('rp-code',n.code);setV('rp-name',n.nome);
+  setV('rp-comp',n.comp);setV('rp-larg',n.larg);
+  setV('rp-x',Math.round(n.px));setV('rp-y',Math.round(n.py));
+  setV('rp-qty',n.qty||1);
+  document.getElementById('rp-rot').checked=n.rotated;
+  document.getElementById('rp-lock').checked=n.locked;
+  setV('re-t',n.edges.tc||'#e53e3e');setV('re-b',n.edges.bc||'#e53e3e');
+  setV('re-l',n.edges.lc||'#e53e3e');setV('re-r',n.edges.rc||'#e53e3e');
+  document.getElementById('re-t-on').checked=!!n.edges.t;document.getElementById('re-b-on').checked=!!n.edges.b;
+  document.getElementById('re-l-on').checked=!!n.edges.l;document.getElementById('re-r-on').checked=!!n.edges.r;
   document.getElementById('sel-info').textContent=n.code+' — '+n.nome+' ('+n.comp+'x'+n.larg+'mm)';
-  renderDrillList();
+  renderPieceDrills(n.pecId);
   renderCanvas();
 }
-function selectPieceById(pieceId){
-  var n=nested.find(function(x){return x.pieceId===pieceId});
-  if(n)selectNested(n.id);
-}
-function clearSelection(){
-  selectedId=null;
-  document.getElementById('prop-empty').style.display='block';
-  document.getElementById('prop-piece').style.display='none';
-  document.getElementById('sel-info').textContent='';
-}
-document.getElementById('sheet-canvas').addEventListener('click',function(e){
-  if(e.target===this||e.target.className.includes('sheet-bg')||e.target.className.includes('sheet-label'))clearSelection();
-});
+function selPecById(pid){var n=NEST.find(function(x){return x.pecId===pid});if(n){selNest(n.id);}else{toast('Peca nao esta no nesting','err');}}
+function clearSel(){selId=null;document.getElementById('rp-empty').style.display='block';document.getElementById('rp-piece').style.display='none';document.getElementById('sel-info').textContent='';renderCanvas();}
+document.getElementById('sheet-canvas').addEventListener('click',function(e){if(e.target===this)clearSel();});
+function upSel(f,v){var n=NEST.find(function(x){return x.id===selId});if(!n)return;n[f]=v;}
+function doRot(){var n=NEST.find(function(x){return x.id===selId});if(!n)return;var t=n.comp;n.comp=n.larg;n.larg=t;n.rotated=!n.rotated;setV('rp-comp',n.comp);setV('rp-larg',n.larg);renderCanvas();}
+function doLock(){var n=NEST.find(function(x){return x.id===selId});if(!n)return;n.locked=document.getElementById('rp-lock').checked;renderCanvas();}
+function removeSelected(){if(!selId)return;NEST=NEST.filter(function(x){return x.id!==selId});clearSel();renderCanvas();updateStats();}
+function upEdge(){var n=NEST.find(function(x){return x.id===selId});if(!n)return;n.edges.t=document.getElementById('re-t-on').checked;n.edges.b=document.getElementById('re-b-on').checked;n.edges.l=document.getElementById('re-l-on').checked;n.edges.r=document.getElementById('re-r-on').checked;n.edges.tc=getV('re-t');n.edges.bc=getV('re-b');n.edges.lc=getV('re-l');n.edges.rc=getV('re-r');renderCanvas();}
+function applyGlobalEdge(){var n=NEST.find(function(x){return x.id===selId});if(!n)return;n.edges.tc=getV('eg-t');n.edges.bc=getV('eg-b');n.edges.lc=getV('eg-l');n.edges.rc=getV('eg-r');n.edges.t=document.getElementById('eg-t-on').checked;n.edges.b=document.getElementById('eg-b-on').checked;n.edges.l=document.getElementById('eg-l-on').checked;n.edges.r=document.getElementById('eg-r-on').checked;setV('re-t',n.edges.tc);setV('re-b',n.edges.bc);setV('re-l',n.edges.lc);setV('re-r',n.edges.rc);document.getElementById('re-t-on').checked=n.edges.t;document.getElementById('re-b-on').checked=n.edges.b;document.getElementById('re-l-on').checked=n.edges.l;document.getElementById('re-r-on').checked=n.edges.r;renderCanvas();toast('Fitas aplicadas','ok');}
 
-function updateSelPiece(field,val){
-  var n=nested.find(function(x){return x.id===selectedId});if(!n)return;
-  n[field]=val;
-  if(field==='comp'||field==='larg'||field==='px'||field==='py')renderCanvas();
-}
-function toggleRot(){
-  var n=nested.find(function(x){return x.id===selectedId});if(!n)return;
-  var tmp=n.comp;n.comp=n.larg;n.larg=tmp;n.rotated=!n.rotated;
-  document.getElementById('pp-comp').value=n.comp;
-  document.getElementById('pp-larg').value=n.larg;
-  document.getElementById('pp-rot').checked=n.rotated;
-  renderCanvas();
-}
-function toggleLock(){
-  var n=nested.find(function(x){return x.id===selectedId});if(!n)return;
-  n.locked=document.getElementById('pp-lock').checked;
-  renderCanvas();
-}
-function removeSelected(){
-  if(!selectedId)return;
-  nested=nested.filter(function(x){return x.id!==selectedId});
-  clearSelection();renderCanvas();updateNestingStats();
-  toast('Peca removida');
-}
+/* ══════════════════════════ ZOOM ══════════════════════════ */
+function zIn(){zoom=Math.min(zoom*1.25,5);document.getElementById('z-lbl').textContent=Math.round(zoom*100)+'%';renderCanvas();}
+function zOut(){zoom=Math.max(zoom/1.25,.15);document.getElementById('z-lbl').textContent=Math.round(zoom*100)+'%';renderCanvas();}
+function zFit(){var w=document.getElementById('canvas-wrap');var items=NEST.filter(function(n){return n.sheet===curSh});if(!items.length)return;var SW=items[0].sheetW,SH=items[0].sheetH;zoom=Math.min((w.clientWidth-90)/(SW*SCALE),(w.clientHeight-90)/(SH*SCALE));document.getElementById('z-lbl').textContent=Math.round(zoom*100)+'%';renderCanvas();}
+function prevSh(){if(curSh>0){curSh--;renderCanvas();}}
+function nextSh(){if(curSh<totSh-1){curSh++;renderCanvas();}}
 
-/* ═══════════════════════════════════════
-   EDGES ON PIECE
-═══════════════════════════════════════ */
-function updateEdgesOnPiece(){
-  var n=nested.find(function(x){return x.id===selectedId});if(!n)return;
-  n.edges.t=document.getElementById('pe-t-on').checked;
-  n.edges.b=document.getElementById('pe-b-on').checked;
-  n.edges.l=document.getElementById('pe-l-on').checked;
-  n.edges.r=document.getElementById('pe-r-on').checked;
-  n.edges.tc=document.getElementById('pe-t').value;
-  n.edges.bc=document.getElementById('pe-b').value;
-  n.edges.lc=document.getElementById('pe-l').value;
-  n.edges.rc=document.getElementById('pe-r').value;
-  renderCanvas();
+/* ══════════════════════════ DRILLING ══════════════════════════ */
+var DR_PRESETS={vb:{diam:8,prof:10,x:37,y:37,pat:'single'},dobradica:{diam:35,prof:13,x:22.5,y:37,pat:'dobradica'},gaveta:{diam:8,prof:10,x:37,y:37,pat:'row-x'},canal:{diam:8,prof:10,x:37,y:37,pat:'row-y'},custom:{diam:8,prof:10,x:37,y:37,pat:'single'}};
+function updateDrillPreset(){
+  var p=DR_PRESETS[getV('dr-type')]||DR_PRESETS.custom;
+  setV('dr-diam',p.diam);setV('dr-prof',p.prof);setV('dr-x',p.x);setV('dr-y',p.y);setV('dr-pat',p.pat);
+  document.getElementById('dr-spacing-row').style.display=(p.pat.includes('row')||p.pat==='corners')?'block':'none';
 }
-function applyGlobalEdges(){
-  var n=nested.find(function(x){return x.id===selectedId});if(!n)return;
-  n.edges.tc=document.getElementById('edge-t-color').value;
-  n.edges.bc=document.getElementById('edge-b-color').value;
-  n.edges.lc=document.getElementById('edge-l-color').value;
-  n.edges.rc=document.getElementById('edge-r-color').value;
-  n.edges.t=document.getElementById('edge-t-on').checked;
-  n.edges.b=document.getElementById('edge-b-on').checked;
-  n.edges.l=document.getElementById('edge-l-on').checked;
-  n.edges.r=document.getElementById('edge-r-on').checked;
-  document.getElementById('pe-t').value=n.edges.tc;document.getElementById('pe-b').value=n.edges.bc;
-  document.getElementById('pe-l').value=n.edges.lc;document.getElementById('pe-r').value=n.edges.rc;
-  document.getElementById('pe-t-on').checked=n.edges.t;document.getElementById('pe-b-on').checked=n.edges.b;
-  document.getElementById('pe-l-on').checked=n.edges.l;document.getElementById('pe-r-on').checked=n.edges.r;
-  renderCanvas();toast('Fitas aplicadas','ok');
+function updateDrillSheetList(){
+  var s=document.getElementById('dr-sheet');
+  s.innerHTML='<option value="">- selecione chapa -</option>';
+  for(var i=0;i<totSh;i++)s.innerHTML+='<option value="'+i+'">Chapa '+(i+1)+'</option>';
+  document.getElementById('dr-piece').innerHTML='<option value="">- selecione peca -</option>';
+  document.getElementById('drill-applied').innerHTML='<div style="padding:12px;font-size:10px;color:var(--text3);text-align:center">Selecione chapa e peca</div>';
 }
-
-/* ═══════════════════════════════════════
-   ZOOM
-═══════════════════════════════════════ */
-function zoomIn(){zoom=Math.min(zoom*1.25,4);document.getElementById('zoom-label').textContent=Math.round(zoom*100)+'%';renderCanvas();}
-function zoomOut(){zoom=Math.max(zoom/1.25,.2);document.getElementById('zoom-label').textContent=Math.round(zoom*100)+'%';renderCanvas();}
-function zoomFit(){
-  var wrap=document.getElementById('canvas-wrap');
-  var items=nested.filter(function(n){return n.sheet===currentSheet});
-  if(!items.length)return;
-  var SW=items[0].sheetW,SH=items[0].sheetH;
-  var fitW=(wrap.clientWidth-80)/SW/SCALE;
-  var fitH=(wrap.clientHeight-80)/SH/SCALE;
-  zoom=Math.min(fitW,fitH);
-  document.getElementById('zoom-label').textContent=Math.round(zoom*100)+'%';
-  renderCanvas();
+function updateDrillPieceList(){
+  var sh=parseInt(getV('dr-sheet'));
+  var s=document.getElementById('dr-piece');
+  s.innerHTML='<option value="">- selecione peca -</option>';
+  if(isNaN(sh))return;
+  var items=NEST.filter(function(n){return n.sheet===sh});
+  items.forEach(function(n){s.innerHTML+='<option value="'+n.id+'">'+n.code+' — '+n.nome+'</option>';});
+  s.addEventListener('change',function(){renderPieceDrillsById(parseInt(s.value));});
 }
-
-/* ═══════════════════════════════════════
-   SHEET NAV
-═══════════════════════════════════════ */
-function prevSheet(){if(currentSheet>0){currentSheet--;renderCanvas();updateNestingStats();}}
-function nextSheet(){if(currentSheet<totalSheets-1){currentSheet++;renderCanvas();updateNestingStats();}}
-
-/* ═══════════════════════════════════════
-   FURACAO
-═══════════════════════════════════════ */
-var DRILL_PRESETS={
-  vb:{diam:8,prof:10,x:37,y:37,pattern:'single'},
-  dobradica:{diam:35,prof:13,x:22.5,y:37,pattern:'dobradica'},
-  gaveta:{diam:8,prof:10,x:37,y:37,pattern:'row-x'},
-  custom:{diam:8,prof:10,x:37,y:37,pattern:'single'}
-};
-function updateDrillParams(){
-  var t=document.getElementById('drill-type').value;
-  var p=DRILL_PRESETS[t];
-  document.getElementById('dr-diam').value=p.diam;
-  document.getElementById('dr-prof').value=p.prof;
-  document.getElementById('dr-x').value=p.x;
-  document.getElementById('dr-y').value=p.y;
-  document.getElementById('dr-pattern').value=p.pattern;
+function renderPieceDrillsById(nid){var n=NEST.find(function(x){return x.id===nid});if(!n)return;renderPieceDrills(n.pecId);}
+function renderPieceDrills(pid){
+  var ops=DRILLS[pid]||[];
+  var el=document.getElementById('drill-applied');
+  var rp=document.getElementById('rp-drills');
+  var html=ops.length?ops.map(function(d,i){return'<div style="display:flex;align-items:center;gap:6px;padding:5px 10px;border-bottom:1px solid var(--border);font-size:10px"><div style="width:8px;height:8px;border-radius:50%;background:var(--purple);flex-shrink:0"></div><div style="flex:1">'+d.tipo+' &#8960;'+d.diam+'mm P'+d.prof+'mm @('+Math.round(d.x)+','+Math.round(d.y)+')</div><button class="btn btn-d btn-xs btn-icon" onclick="removeDrill('+pid+','+i+')">&#10005;</button></div>';}).join(''):'<div style="padding:10px;font-size:10px;color:var(--text3);text-align:center">Sem furacoes</div>';
+  el.innerHTML=html;if(rp)rp.innerHTML=html;
 }
-function applyDrillToSelected(){
-  var n=nested.find(function(x){return x.id===selectedId});
-  if(!n){toast('Selecione uma peca','err');return;}
-  var pid=n.pieceId;
-  if(!drillOps[pid])drillOps[pid]=[];
-  var type=document.getElementById('drill-type').value;
-  var diam=parseFloat(document.getElementById('dr-diam').value)||8;
-  var prof=parseFloat(document.getElementById('dr-prof').value)||10;
-  var bx=parseFloat(document.getElementById('dr-x').value)||37;
-  var by=parseFloat(document.getElementById('dr-y').value)||37;
-  var pat=document.getElementById('dr-pattern').value;
+function applyDrill(){
+  var nid=parseInt(getV('dr-piece'));
+  if(isNaN(nid)||!nid){toast('Selecione chapa e peca','err');return;}
+  var n=NEST.find(function(x){return x.id===nid});
+  if(!n){toast('Peca nao encontrada','err');return;}
+  var pid=n.pecId;
+  if(!DRILLS[pid])DRILLS[pid]=[];
+  var tipo=getV('dr-type');var diam=getN('dr-diam');var prof=getN('dr-prof');
+  var bx=getN('dr-x');var by=getN('dr-y');var pat=getV('dr-pat');
+  var spacing=getN('dr-spacing')||64;
+  var toolId2=parseInt(getV('dr-tool'))||0;
+  var tool=TOOLS.find(function(t){return t.id===toolId2})||null;
   var points=[];
-  if(pat==='single'){points=[{x:bx,y:by}];}
-  else if(pat==='corners'){points=[{x:bx,y:by},{x:n.comp-bx,y:by},{x:bx,y:n.larg-by},{x:n.comp-bx,y:n.larg-by}];}
-  else if(pat==='dobradica'){points=[{x:bx,y:by},{x:bx,y:n.larg-by}];}
-  else if(pat==='row-x'){for(var xi=bx;xi<n.comp-10;xi+=96)points.push({x:xi,y:by});}
-  else if(pat==='row-y'){for(var yi=by;yi<n.larg-10;yi+=32)points.push({x:bx,y:yi});}
-  points.forEach(function(pt){
-    drillOps[pid].push({type:type,x:pt.x,y:pt.y,diam:diam,prof:prof,pattern:pat,label:document.getElementById('drill-type').options[document.getElementById('drill-type').selectedIndex].text});
-  });
-  renderCanvas();renderDrillList();toast('Furacao aplicada — '+points.length+' ponto(s)','ok');
+  if(pat==='single')points=[{x:bx,y:by}];
+  else if(pat==='corners')points=[{x:bx,y:by},{x:n.comp-bx,y:by},{x:bx,y:n.larg-by},{x:n.comp-bx,y:n.larg-by}];
+  else if(pat==='dobradica')points=[{x:bx,y:by},{x:bx,y:n.larg-by}];
+  else if(pat==='row-x'){for(var xi=bx;xi<=n.comp-bx;xi+=spacing)points.push({x:xi,y:by});}
+  else if(pat==='row-y'){for(var yi=by;yi<=n.larg-by;yi+=spacing)points.push({x:bx,y:yi});}
+  points.forEach(function(pt){DRILLS[pid].push({tipo:tipo,diam:diam,prof:prof,x:pt.x,y:pt.y,tool:tool?tool.nome:'-',slot:tool?tool.slot:0});});
+  renderCanvas();renderPieceDrills(pid);toast('Furacao aplicada ('+points.length+' ponto[s])','ok');
 }
-function renderDrillList(){
-  var el=document.getElementById('drill-list');
-  var n=nested.find(function(x){return x.id===selectedId});
-  if(!n){el.innerHTML='<div style="padding:12px;font-size:10px;color:var(--text3);text-align:center">Selecione uma peca</div>';
-    document.getElementById('pp-drills').innerHTML='';return;}
-  var pid=n.pieceId;
-  var ops=drillOps[pid]||[];
-  var html=ops.length?ops.map(function(d,i){
-    return '<div class="drill-row"><div class="drill-dot"></div><div style="flex:1;font-size:10px">'+d.label+' — &#8960;'+d.diam+'mm P'+d.prof+'mm</div><div style="font-size:9px;color:var(--text3);">'+Math.round(d.x)+'x'+Math.round(d.y)+'</div><button class="btn btn-d btn-xs btn-icon" onclick="removeDrill('+pid+','+i+')">✕</button></div>';
-  }).join(''):'<div style="padding:12px;font-size:10px;color:var(--text3);text-align:center">Nenhuma furacao</div>';
-  el.innerHTML=html;
-  document.getElementById('pp-drills').innerHTML=html;
-}
-function removeDrill(pid,idx){
-  if(drillOps[pid])drillOps[pid].splice(idx,1);
-  renderDrillList();renderCanvas();
+function removeDrill(pid,idx){if(DRILLS[pid])DRILLS[pid].splice(idx,1);renderPieceDrills(pid);renderCanvas();}
+
+/* ══════════════════════════ LABELS ══════════════════════════ */
+function labelCSS(){return '<style>body{font-family:Syne,sans-serif;background:#f5f5f5;padding:16px}@page{size:A4;margin:10mm}.labels-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0}.lbl{background:#fff;border:1.5px solid #ccc;border-radius:6px;padding:8px 10px;position:relative;min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:3px;break-inside:avoid}.lbl-code{font-family:DM Mono,monospace;font-size:18px;font-weight:800;color:#000}.lbl-name{font-size:12px;color:#222;font-weight:600}.lbl-dim{font-family:DM Mono,monospace;font-size:10px;color:#555}.lbl-mat{font-size:10px;color:#888}.lbl-sub{font-size:9px;color:#aaa;border-top:1px solid #eee;padding-top:3px;margin-top:2px;width:100%}.edge-stripe{position:absolute}.edge-t{top:0;left:0;right:0;height:7px;border-radius:4px 4px 0 0}.edge-b{bottom:0;left:0;right:0;height:7px;border-radius:0 0 4px 4px}.edge-l{top:7px;left:0;bottom:7px;width:7px}.edge-r{top:7px;right:0;bottom:7px;width:7px}</style>';}
+
+function buildLabel(n,i,total){
+  var showCode=document.getElementById('lf-code').checked;
+  var showName=document.getElementById('lf-name').checked;
+  var showDim=document.getElementById('lf-dim').checked;
+  var showMat=document.getElementById('lf-mat').checked;
+  var showSheet=document.getElementById('lf-sheet').checked;
+  var showPos=document.getElementById('lf-pos').checked;
+  var showQty=document.getElementById('lf-qty').checked;
+  var custom=getV('lf-custom').trim();
+  var et=n.edges.t?n.edges.tc:(document.getElementById('eg-t-on').checked?getV('eg-t'):null);
+  var eb=n.edges.b?n.edges.bc:(document.getElementById('eg-b-on').checked?getV('eg-b'):null);
+  var el2=n.edges.l?n.edges.lc:(document.getElementById('eg-l-on').checked?getV('eg-l'):null);
+  var er=n.edges.r?n.edges.rc:(document.getElementById('eg-r-on').checked?getV('eg-r'):null);
+  return '<div class="lbl">'+
+    (et?'<div class="edge-stripe edge-t" style="background:'+et+'"></div>':'')+
+    (eb?'<div class="edge-stripe edge-b" style="background:'+eb+'"></div>':'')+
+    (el2?'<div class="edge-stripe edge-l" style="background:'+el2+'"></div>':'')+
+    (er?'<div class="edge-stripe edge-r" style="background:'+er+'"></div>':'')+
+    (showCode?'<div class="lbl-code">'+n.code+'</div>':'')+
+    (showName?'<div class="lbl-name">'+n.nome+'</div>':'')+
+    (showDim?'<div class="lbl-dim">'+n.comp+' × '+n.larg+' mm</div>':'')+
+    (showMat?'<div class="lbl-mat">'+n.matNome+' — '+n.esp+'mm</div>':'')+
+    (showSheet?'<div class="lbl-sub">Chapa '+(n.sheet+1)+'</div>':'')+
+    (showPos?'<div class="lbl-sub">X:'+Math.round(n.px)+' Y:'+Math.round(n.py)+'</div>':'')+
+    (showQty&&total?'<div class="lbl-sub">'+i+' de '+total+'</div>':'')+
+    (custom?'<div class="lbl-sub">'+custom+'</div>':'')+
+  '</div>';
 }
 
-/* ═══════════════════════════════════════
-   ATC
-═══════════════════════════════════════ */
-var ATC_OP_TYPES=['Fresa de corte','Fresa de rasgo','Broca VB','Broca dobradica','Fresa chanfro','Fresa raiado'];
-function toggleATC(){
-  var on=document.getElementById('atc-enabled').checked;
-  document.getElementById('atc-config').style.display=on?'block':'none';
-  if(on&&atcTools.length===0)renderATCSlots();
+function openLabels(){
+  if(!NEST.length){toast('Execute o nesting primeiro','err');return;}
+  // Group by pecId with count
+  var groups={};
+  NEST.forEach(function(n){if(!groups[n.pecId])groups[n.pecId]={n:n,count:0};groups[n.pecId].count++;});
+  // One label per qty
+  var html=labelCSS()+'<div class="labels-grid">';
+  Object.values(groups).forEach(function(g){
+    for(var i=1;i<=g.count;i++){html+=buildLabel(g.n,i,g.count);}
+  });
+  html+='</div>';
+  document.getElementById('labels-body').innerHTML=html;
+  openModal('modal-labels');
 }
-function renderATCSlots(){
-  var slots=parseInt(document.getElementById('atc-slots').value)||8;
-  atcTools=[];
-  var html='';
-  for(var i=0;i<slots;i++){
-    atcTools.push({slot:i+1,diam:6,type:'Fresa de corte',rpm:18000,avanco:3000});
-    html+='<div class="tool-row"><div class="tool-num">T'+(i+1)+'</div>';
-    html+='<select style="flex:1;height:22px;font-size:10px" onchange="atcTools['+i+'].type=this.value">'+ATC_OP_TYPES.map(function(t){return'<option>'+t+'</option>';}).join('')+'</select>';
-    html+='<input type="number" value="6" style="width:38px;height:22px;font-size:10px" placeholder="mm" onchange="atcTools['+i+'].diam=+this.value"/>';
-    html+='</div>';
+
+function openReport(){
+  if(!NEST.length){toast('Execute o nesting primeiro','err');return;}
+  var custom=getV('lf-custom').trim();
+  var totalCusto=0;NEST.forEach(function(n){if(n.matCusto>0)totalCusto+=n.matCusto*(n.comp*n.larg/1e6)/(n.sheetW*n.sheetH/1e6);});
+  var html='<style>body{font-family:Syne,sans-serif;font-size:12px}table{width:100%;border-collapse:collapse}th{background:#f0f0f0;padding:6px 8px;text-align:left;font-size:11px;font-weight:700;border-bottom:2px solid #ddd}td{padding:5px 8px;border-bottom:1px solid #eee;font-family:DM Mono,monospace;font-size:11px}tr:hover td{background:#fafafa}.total{font-weight:700;border-top:2px solid #333}</style>';
+  html+='<div style="margin-bottom:12px"><div style="font-size:18px;font-weight:800">Relatorio de Pecas</div>';
+  if(custom)html+='<div style="font-size:12px;color:#666">'+custom+'</div>';
+  html+='<div style="font-size:11px;color:#999;margin-top:2px">'+new Date().toLocaleString('pt-BR')+'</div></div>';
+  html+='<table><thead><tr><th>Codigo</th><th>Nome</th><th>Comp</th><th>Larg</th><th>Esp</th><th>Material</th><th>Chapa</th><th>PosX</th><th>PosY</th><th>Furos</th></tr></thead><tbody>';
+  NEST.forEach(function(n){
+    var drills=DRILLS[n.pecId]?DRILLS[n.pecId].length:0;
+    html+='<tr><td>'+n.code+'</td><td>'+n.nome+'</td><td>'+n.comp+'</td><td>'+n.larg+'</td><td>'+n.esp+'</td><td>'+n.matNome+'</td><td>'+(n.sheet+1)+'</td><td>'+Math.round(n.px)+'</td><td>'+Math.round(n.py)+'</td><td>'+drills+'</td></tr>';
+  });
+  html+='<tr class="total"><td colspan="8">Total: '+NEST.length+' pecas | Chapas: '+totSh+'</td><td colspan="2">R$'+totalCusto.toFixed(2)+'</td></tr>';
+  html+='</tbody></table>';
+  document.getElementById('report-body').innerHTML=html;
+  openModal('modal-report');
+}
+
+function openSheetPDF(){
+  if(!NEST.length){toast('Execute o nesting primeiro','err');return;}
+  var custom=getV('lf-custom').trim();
+  var html='<style>body{font-family:Syne,sans-serif;background:#fff;padding:12px}@page{size:A4 landscape;margin:10mm}.sheet-page{margin-bottom:24px;break-inside:avoid}.sh-title{font-size:13px;font-weight:700;margin-bottom:6px}.sh-svg{border:1.5px solid #ccc;border-radius:4px;background:#f8f8f8}</style>';
+  if(custom)html+='<div style="font-size:14px;font-weight:700;margin-bottom:10px">'+custom+'</div>';
+  for(var si=0;si<totSh;si++){
+    var items=NEST.filter(function(n){return n.sheet===si});
+    if(!items.length)continue;
+    var SW=items[0].sheetW,SH=items[0].sheetH;
+    var W=640,H=Math.round(W*SH/SW);
+    var xs=W/SW,ys=H/SH;
+    html+='<div class="sheet-page"><div class="sh-title">Chapa '+(si+1)+' — '+SW+'×'+SH+'mm — '+items[0].matNome+'</div>';
+    html+='<svg class="sh-svg" width="'+W+'" height="'+H+'" xmlns="http://www.w3.org/2000/svg">';
+    html+='<rect x="0" y="0" width="'+W+'" height="'+H+'" fill="#f8f8f8"/>';
+    // Grid
+    for(var gx2=0;gx2<SW;gx2+=100)html+='<line x1="'+(gx2*xs)+'" y1="0" x2="'+(gx2*xs)+'" y2="'+H+'" stroke="#e0e0e0" stroke-width=".5"/>';
+    for(var gy2=0;gy2<SH;gy2+=100)html+='<line x1="0" y1="'+(gy2*ys)+'" x2="'+W+'" y2="'+(gy2*ys)+'" stroke="#e0e0e0" stroke-width=".5"/>';
+    items.forEach(function(n){
+      var col=MAT_COL[n.matTipo]||'#4a9e5c';
+      var x=n.px*xs,y=n.py*ys,w=n.comp*xs,h=n.larg*ys;
+      html+='<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="'+col+'" fill-opacity=".12" stroke="'+col+'" stroke-width="1.2" rx="1"/>';
+      // Edge tapes in SVG
+      if(n.edges.t)html+='<rect x="'+x+'" y="'+y+'" width="'+w+'" height="4" fill="'+n.edges.tc+'" opacity=".8"/>';
+      if(n.edges.b)html+='<rect x="'+x+'" y="'+(y+h-4)+'" width="'+w+'" height="4" fill="'+n.edges.bc+'" opacity=".8"/>';
+      if(n.edges.l)html+='<rect x="'+x+'" y="'+(y+4)+'" width="4" height="'+(h-8)+'" fill="'+n.edges.lc+'" opacity=".8"/>';
+      if(n.edges.r)html+='<rect x="'+(x+w-4)+'" y="'+(y+4)+'" width="4" height="'+(h-8)+'" fill="'+n.edges.rc+'" opacity=".8"/>';
+      // Drills
+      if(DRILLS[n.pecId])DRILLS[n.pecId].forEach(function(d){html+='<circle cx="'+(x+d.x*xs)+'" cy="'+(y+d.y*ys)+'" r="'+(d.diam/2*xs)+'" fill="rgba(168,85,247,.3)" stroke="#a855f7" stroke-width=".8"/>';});
+      // Label
+      if(w>30&&h>14)html+='<text x="'+(x+w/2)+'" y="'+(y+h/2+2)+'" text-anchor="middle" font-family="DM Mono,monospace" font-size="'+(Math.min(w,h)*.18)+'" fill="'+col+'" font-weight="700">'+n.code+'</text>';
+      if(w>40&&h>24)html+='<text x="'+(x+w/2)+'" y="'+(y+h/2+Math.min(w,h)*.18+3)+'" text-anchor="middle" font-family="sans-serif" font-size="'+(Math.min(w,h)*.13)+'" fill="#666">'+n.comp+'x'+n.larg+'</text>';
+    });
+    html+='</svg></div>';
   }
-  document.getElementById('atc-slots-list').innerHTML=html;
-}
-function addATCOp(){
-  var html='<div class="tool-row" style="flex-wrap:wrap;gap:4px;padding:6px 10px">';
-  html+='<select style="flex:1;height:22px;font-size:10px" id="atcop-type"><option>'+ATC_OP_TYPES.join('</option><option>')+'</option></select>';
-  html+='<select style="width:80px;height:22px;font-size:10px" id="atcop-tool">'+atcTools.map(function(t){return'<option value="'+t.slot+'">T'+t.slot+' '+t.diam+'mm</option>';}).join('')+'</select>';
-  html+='<input type="number" value="100" style="width:50px;height:22px;font-size:10px" id="atcop-pct" placeholder="%"/> ';
-  html+='<button class="btn btn-a btn-xs" onclick="saveATCOp(this)">Add</button></div>';
-  document.getElementById('atc-ops').innerHTML=document.getElementById('atc-ops').innerHTML.replace('<div style="padding:12px','<!-- -->');
-  document.getElementById('atc-ops').insertAdjacentHTML('beforeend',html);
-}
-function saveATCOp(btn){
-  var row=btn.closest('.tool-row');
-  var type=row.querySelector('#atcop-type').value;
-  var tool=row.querySelector('#atcop-tool').value;
-  var pct=row.querySelector('#atcop-pct').value;
-  atcOps.push({type:type,tool:'T'+tool,pct:pct});
-  row.outerHTML='<div class="tool-row"><div class="tool-num">'+('T'+tool)+'</div><div style="flex:1;font-size:10px">'+type+'</div><div style="font-size:9px;color:var(--text3)">'+pct+'% mat</div></div>';
-  toast('Operacao ATC adicionada','ok');
+  document.getElementById('sheet-pdf-body').innerHTML=html;
+  openModal('modal-sheet-pdf');
 }
 
-/* ═══════════════════════════════════════
-   ETIQUETAS
-═══════════════════════════════════════ */
-function printLabels(){
-  if(!nested.length){toast('Execute o nesting primeiro','err');return;}
-  var showCode=document.getElementById('lbl-code').checked;
-  var showName=document.getElementById('lbl-name').checked;
-  var showDim=document.getElementById('lbl-dim').checked;
-  var showMat=document.getElementById('lbl-mat').checked;
-  var showSheet=document.getElementById('lbl-sheet').checked;
-  var showQty=document.getElementById('lbl-qty').checked;
-  var custom=document.getElementById('lbl-custom').value.trim();
-  var tc=document.getElementById('edge-t-color').value;
-  var bc=document.getElementById('edge-b-color').value;
-  var lc=document.getElementById('edge-l-color').value;
-  var rc=document.getElementById('edge-r-color').value;
-  var ton=document.getElementById('edge-t-on').checked;
-  var bon=document.getElementById('edge-b-on').checked;
-  var lon=document.getElementById('edge-l-on').checked;
-  var ron=document.getElementById('edge-r-on').checked;
-
-  // Group unique pieces
-  var seen={};var items=[];
-  nested.forEach(function(n){
-    if(!seen[n.code]){seen[n.code]=0;}seen[n.code]++;
-    if(!items.find(function(x){return x.code===n.code}))items.push(n);
-  });
-
-  var html=items.map(function(n,i){
-    var edgeT=n.edges.t?n.edges.tc:ton?tc:null;
-    var edgeB=n.edges.b?n.edges.bc:bon?bc:null;
-    var edgeL=n.edges.l?n.edges.lc:lon?lc:null;
-    var edgeR=n.edges.r?n.edges.rc:ron?rc:null;
-    var T=edgeT?'<div style="position:absolute;top:0;left:0;right:0;height:8px;background:'+edgeT+';border-radius:4px 4px 0 0"></div>':'';
-    var B=edgeB?'<div style="position:absolute;bottom:0;left:0;right:0;height:8px;background:'+edgeB+';border-radius:0 0 4px 4px"></div>':'';
-    var L=edgeL?'<div style="position:absolute;top:8px;left:0;bottom:8px;width:8px;background:'+edgeL+'"></div>':'';
-    var R=edgeR?'<div style="position:absolute;top:8px;right:0;bottom:8px;width:8px;background:'+edgeR+'"></div>':'';
-    return '<div style="background:white;border:1.5px solid #ddd;border-radius:6px;padding:10px 14px;margin-bottom:8px;position:relative;min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:3px">'+T+B+L+R+
-      (showCode?'<div style="font-family:DM Mono,monospace;font-size:20px;font-weight:800;color:#000">'+n.code+'</div>':'')+
-      (showName?'<div style="font-size:13px;color:#222;font-weight:600">'+n.nome+'</div>':'')+
-      (showDim?'<div style="font-family:DM Mono,monospace;font-size:11px;color:#555">'+n.comp+' x '+n.larg+' mm</div>':'')+
-      (showMat?'<div style="font-size:10px;color:#888">'+n.matNome+' — '+n.esp+'mm</div>':'')+
-      (showSheet?'<div style="font-size:10px;color:#aaa">Chapa '+(n.sheet+1)+'</div>':'')+
-      (showQty?'<div style="font-size:10px;color:#aaa">Qtd: '+(seen[n.code]||1)+'</div>':'')+
-      (custom?'<div style="font-size:10px;color:#666;border-top:1px solid #eee;padding-top:4px;margin-top:2px">'+custom+'</div>':'')+
-    '</div>';
-  }).join('');
-
-  document.getElementById('label-modal-body').innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+html+'</div>';
-  document.getElementById('label-modal').classList.add('open');
-}
-
-/* ═══════════════════════════════════════
-   EXPORTS
-═══════════════════════════════════════ */
+/* ══════════════════════════ EXPORTS ══════════════════════════ */
 function genDXF(){
-  if(!nested.length)return null;
+  if(!NEST.length)return null;
   var ent='';
-  nested.forEach(function(n){
-    var oy=n.sheet*(n.sheetH+300);
+  NEST.forEach(function(n){
+    var oy=n.sheet*(n.sheetH+400);
     var x1=n.px,y1=-(n.py+oy),x2=n.px+n.comp,y2=-(n.py+n.larg+oy);
     ent+='0\nLINE\n8\nCORTE\n10\n'+x1+'\n20\n'+y1+'\n30\n0\n11\n'+x2+'\n21\n'+y1+'\n31\n0\n';
     ent+='0\nLINE\n8\nCORTE\n10\n'+x2+'\n20\n'+y1+'\n30\n0\n11\n'+x2+'\n21\n'+y2+'\n31\n0\n';
     ent+='0\nLINE\n8\nCORTE\n10\n'+x2+'\n20\n'+y2+'\n30\n0\n11\n'+x1+'\n21\n'+y2+'\n31\n0\n';
     ent+='0\nLINE\n8\nCORTE\n10\n'+x1+'\n20\n'+y2+'\n30\n0\n11\n'+x1+'\n21\n'+y1+'\n31\n0\n';
-    // Drill holes
-    if(drillOps[n.pieceId]){drillOps[n.pieceId].forEach(function(d){
-      var cx=n.px+d.x,cy=-(n.py+d.y+oy);
-      var r=d.diam/2;
-      ent+='0\nCIRCLE\n8\nFURAS\n10\n'+cx+'\n20\n'+cy+'\n30\n0\n40\n'+r+'\n';
-    });}
-    ent+='0\nTEXT\n8\nNOMES\n10\n'+(x1+5)+'\n20\n'+(y1-8)+'\n30\n0\n40\n7\n1\n'+n.code+'('+n.comp+'x'+n.larg+')Ch'+(n.sheet+1)+'\n';
+    if(DRILLS[n.pecId])DRILLS[n.pecId].forEach(function(d){ent+='0\nCIRCLE\n8\nFUROS\n10\n'+(n.px+d.x)+'\n20\n'+(-(n.py+d.y+oy))+'\n30\n0\n40\n'+(d.diam/2)+'\n';});
+    ent+='0\nTEXT\n8\nNOMES\n10\n'+(x1+5)+'\n20\n'+(y1-8)+'\n30\n0\n40\n7\n1\n'+n.code+'\n';
   });
   return'0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1009\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n'+ent+'0\nENDSEC\n0\nEOF';
 }
-
 function genGcode(){
-  if(!nested.length)return null;
-  var atcOn=document.getElementById('atc-enabled').checked;
-  var fresa=6,passada=3,avanco=3000,rpm=18000;
-  if(atcTools.length)fresa=atcTools[0].diam;
-  var gc='; CorteMaster v4 — RHINO CNC\n';
-  if(atcOn&&atcOps.length){gc+='; ATC: '+atcOps.map(function(o){return o.tool+' '+o.type;}).join(', ')+'\n';}
-  gc+='G21\nG90\nG17\n';
-  var bySheet={};
-  nested.forEach(function(n){var k=n.sheet+'_'+n.esp;if(!bySheet[k])bySheet[k]=[];bySheet[k].push(n);});
+  if(!NEST.length)return null;
+  var gc='; CorteMaster v5 — RHINO CNC\n; Ferramentas: '+TOOLS.length+'\n; Pecas: '+NEST.length+'\nG21\nG90\nG17\n';
+  var bySheet={};NEST.forEach(function(n){var k=n.sheet+'_'+n.esp;if(!bySheet[k])bySheet[k]=[];bySheet[k].push(n);});
+  var cutTool=TOOLS.find(function(t){return t.tipo==='Fresa corte'})||{diam:6,rpm:18000,avanco:3000,passada:3,slot:1};
   Object.keys(bySheet).sort().forEach(function(key){
     var items=bySheet[key];var esp=items[0].esp;
-    var passes=Math.ceil(esp/passada);var sn=items[0].sheet+1;
-    gc+='\n; ===== CHAPA '+sn+' | '+esp+'mm | '+passes+' passadas =====\n';
-    // ATC tool change
-    if(atcOn&&atcTools.length){gc+='M6 T1\n';}
-    gc+='M3 S'+rpm+'\nG4 P3\n\n';
+    var passes=Math.ceil(esp/cutTool.passada);var sn=items[0].sheet+1;
+    gc+='\n; ===== CHAPA '+sn+' | '+esp+'mm | '+passes+' passadas | T'+cutTool.slot+' '+cutTool.diam+'mm =====\n';
+    gc+=(TOOLS.length?'M6 T'+cutTool.slot+'\n':'')+('M3 S'+cutTool.rpm+'\nG4 P2\n\n');
     items.forEach(function(n){
-      var off=fresa/2;
+      var off=cutTool.diam/2;
       var x1=(n.px+off).toFixed(2),y1=(-(n.py+off)).toFixed(2);
       var x2=(n.px+n.comp-off).toFixed(2),y2=(-(n.py+n.larg-off)).toFixed(2);
-      gc+='; '+n.code+' — '+n.nome+' ('+n.comp+'x'+n.larg+'x'+n.esp+'mm)\n';
+      gc+='; '+n.code+' — '+n.nome+'\n';
       gc+='G0 Z5\nG0 X'+x1+' Y'+y1+'\n';
-      for(var p=1;p<=passes;p++){
-        var z=Math.max(-(p*passada),-esp);
-        gc+='G1 Z'+z.toFixed(2)+' F'+(avanco*.3).toFixed(0)+'\n';
-        gc+='G1 X'+x2+' Y'+y1+' F'+avanco+'\n';
-        gc+='G1 X'+x2+' Y'+y2+' F'+avanco+'\n';
-        gc+='G1 X'+x1+' Y'+y2+' F'+avanco+'\n';
-        gc+='G1 X'+x1+' Y'+y1+' F'+avanco+'\n';
-      }
+      for(var p=1;p<=passes;p++){var z=Math.max(-(p*cutTool.passada),-esp);gc+='G1 Z'+z.toFixed(2)+' F'+(cutTool.avanco*.3).toFixed(0)+'\nG1 X'+x2+' Y'+y1+' F'+cutTool.avanco+'\nG1 X'+x2+' Y'+y2+' F'+cutTool.avanco+'\nG1 X'+x1+' Y'+y2+' F'+cutTool.avanco+'\nG1 X'+x1+' Y'+y1+' F'+cutTool.avanco+'\n';}
       gc+='G0 Z5\n';
-      // Drilling
-      if(drillOps[n.pieceId]&&drillOps[n.pieceId].length){
-        if(atcOn){gc+='\n; Furacoes — troca ferramenta\nM6 T3\nM3 S'+(rpm*.8).toFixed(0)+'\n';}
-        drillOps[n.pieceId].forEach(function(d){
-          var bx=(n.px+d.x).toFixed(2),by=(-(n.py+d.y)).toFixed(2);
-          gc+='G0 Z5\nG0 X'+bx+' Y'+by+'\n';
-          gc+='G1 Z-'+d.prof+' F'+(avanco*.2).toFixed(0)+'\nG0 Z5\n';
+      if(DRILLS[n.pecId]&&DRILLS[n.pecId].length){
+        var lastSlot=-1;
+        DRILLS[n.pecId].forEach(function(d){
+          if(d.slot&&d.slot!==lastSlot){gc+='M6 T'+d.slot+'\nM3 S'+((TOOLS.find(function(t){return t.slot===d.slot})||{rpm:3000}).rpm)+'\n';lastSlot=d.slot;}
+          gc+='G0 Z5\nG0 X'+(n.px+d.x).toFixed(2)+' Y'+(-(n.py+d.y)).toFixed(2)+'\nG1 Z-'+d.prof+' F600\nG0 Z5\n';
         });
-        if(atcOn){gc+='M6 T1\nM3 S'+rpm+'\n';}
+        if(lastSlot>0)gc+='M6 T'+cutTool.slot+'\nM3 S'+cutTool.rpm+'\n';
       }
       gc+='\n';
     });
-    gc+='; --- Troca chapa '+sn+' ---\nM5\nG0 Z50\nM0\n\n';
+    gc+='; -- Trocar chapa '+sn+' --\nM5\nG0 Z50\nM0\n';
   });
   gc+='M5\nG0 Z30\nG0 X0 Y0\nM30\n';
   return gc;
 }
 function genCSV(){
-  if(!nested.length)return null;
-  var c='Chapa,Codigo,Nome,Comp(mm),Larg(mm),Esp(mm),Material,PosX,PosY,FitaTopo,FitaBase,FitaEsq,FitaDir,Furacoes\n';
-  nested.forEach(function(n){
-    var drills=drillOps[n.pieceId]?drillOps[n.pieceId].length:0;
-    c+=(n.sheet+1)+',"'+n.code+'","'+n.nome+'",'+n.comp+','+n.larg+','+n.esp+',"'+n.matNome+'",'+Math.round(n.px)+','+Math.round(n.py)+','+(n.edges.t?'sim':'nao')+','+(n.edges.b?'sim':'nao')+','+(n.edges.l?'sim':'nao')+','+(n.edges.r?'sim':'nao')+','+drills+'\n';
-  });
+  if(!NEST.length)return null;
+  var c='Chapa,Codigo,Nome,Comp,Larg,Esp,Material,PosX,PosY,FitaTopo,FitaBase,FitaEsq,FitaDir,Furos\n';
+  NEST.forEach(function(n){c+=(n.sheet+1)+',"'+n.code+'","'+n.nome+'",'+n.comp+','+n.larg+','+n.esp+',"'+n.matNome+'",'+Math.round(n.px)+','+Math.round(n.py)+','+(n.edges.t?'Sim':'Nao')+','+(n.edges.b?'Sim':'Nao')+','+(n.edges.l?'Sim':'Nao')+','+(n.edges.r?'Sim':'Nao')+','+(DRILLS[n.pecId]?DRILLS[n.pecId].length:0)+'\n';});
   return c;
 }
-function dl(name,content,type){var b=new Blob([content],{type:type});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=name;a.click();URL.revokeObjectURL(u);}
-function dlDXF(){if(!nested.length){toast('Otimize antes','err');return;}var c=genDXF();if(c){dl('cortemaster.dxf',c,'text/plain');toast('DXF exportado','ok');}}
-function dlGcode(){if(!nested.length){toast('Otimize antes','err');return;}var c=genGcode();if(c){dl('cortemaster.nc',c,'text/plain');toast('G-code exportado','ok');}}
-function dlCSV(){if(!nested.length){toast('Otimize antes','err');return;}var c=genCSV();if(c){dl('cortemaster.csv',c,'text/csv');toast('CSV exportado','ok');}}
+function dl(n,c,t){var b=new Blob([c],{type:t});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=n;a.click();URL.revokeObjectURL(u);}
+function dlDXF(){if(!NEST.length){toast('Otimize antes','err');return;}var c=genDXF();if(c)dl('cortemaster.dxf',c,'text/plain');toast('DXF exportado','ok');}
+function dlGcode(){if(!NEST.length){toast('Otimize antes','err');return;}var c=genGcode();if(c)dl('cortemaster.nc',c,'text/plain');toast('G-code exportado','ok');}
+function dlCSV(){if(!NEST.length){toast('Otimize antes','err');return;}var c=genCSV();if(c)dl('cortemaster.csv',c,'text/csv');toast('CSV exportado','ok');}
 
 // Init
-updateDrillParams();
-document.getElementById('tab-materiais').style.flexDirection='column';
-document.getElementById('tab-materiais').style.display='flex';
+goTab('mat');
 </script>
 </body>
 </html>
