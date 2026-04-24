@@ -122,7 +122,7 @@ input[type=color]{width:100%;height:26px;border:1px solid var(--border2);border-
   <div class="ml" style="display:flex;gap:5px">
     <button class="btn" onclick="dlCSV()">CSV</button>
     <button class="btn" onclick="dlDXF()">DXF</button>
-    <button class="btn btn-a" onclick="dlGcode()">G-code</button>
+    <button class="btn btn-a" onclick="dlGcode()">G-code</button><button class="btn" onclick="openGcodeEditor()">&#9998; Editor G-code</button>
   </div>
 </div>
 
@@ -644,7 +644,26 @@ function renderCanvas(){
   updateStats();
 }
 
-/* ══════════════════════════ DRAG WITH SNAP ══════════════════════════ */
+/* ══════════ COLLISION ══════════ */
+function rectsOverlap(ax,ay,aw,ah,bx,by,bw,bh,mg){
+  return ax<bx+bw+mg&&ax+aw+mg>bx&&ay<by+bh+mg&&ay+ah+mg>by;
+}
+function hasCollision(n,nx,ny,gap){
+  var others=NEST.filter(function(x){return x.id!==n.id&&x.sheet===curSh});
+  for(var i=0;i<others.length;i++){var o=others[i];if(rectsOverlap(nx,ny,n.comp,n.larg,o.px,o.py,o.comp,o.larg,gap))return o;}
+  return null;
+}
+function pushOut(n,nx,ny,gap){
+  var others=NEST.filter(function(x){return x.id!==n.id&&x.sheet===curSh});
+  var col=null;for(var i=0;i<others.length;i++){var o=others[i];if(rectsOverlap(nx,ny,n.comp,n.larg,o.px,o.py,o.comp,o.larg,gap)){col=o;break;}}
+  if(!col)return{x:nx,y:ny};
+  var pR=col.px+col.comp+gap,pL=col.px-n.comp-gap,pD=col.py+col.larg+gap,pU=col.py-n.larg-gap;
+  var d=[Math.abs(pR-nx),Math.abs(pL-nx),Math.abs(pD-ny),Math.abs(pU-ny)];
+  var m=Math.min.apply(null,d);
+  if(m===d[0])return{x:pR,y:ny};if(m===d[1])return{x:pL,y:ny};if(m===d[2])return{x:nx,y:pD};return{x:nx,y:pU};
+}
+
+/* ══════════ DRAG WITH SNAP + COLLISION ══════════ */
 function makeDrag(el,n,SW,SH,pad){
   el.addEventListener('mousedown',function(e){
     if(e.button!==0)return;e.preventDefault();
@@ -653,35 +672,35 @@ function makeDrag(el,n,SW,SH,pad){
     var snapGrid=getN('n-snap')||1;
     var doSnap=document.getElementById('n-snap-pieces').checked;
     var gap=getN('n-gap')||6;
+    var safeX=n.px,safeY=n.py;
     el.classList.add('snapping');
     function mv(ev){
-      var rawX=(ev.clientX-ox)/s;
-      var rawY=(ev.clientY-oy)/s;
-      // Snap to grid
+      var rawX=(ev.clientX-ox)/s,rawY=(ev.clientY-oy)/s;
       var nx=Math.round(rawX/snapGrid)*snapGrid;
       var ny=Math.round(rawY/snapGrid)*snapGrid;
-      // Boundary
       nx=Math.max(0,Math.min(SW-n.comp,nx));
       ny=Math.max(0,Math.min(SH-n.larg,ny));
-      // Snap to other pieces
       if(doSnap){
         var others=NEST.filter(function(x){return x.id!==n.id&&x.sheet===curSh});
-        var snapD=gap+2;
+        var snapD=Math.max(gap+3,8);
         others.forEach(function(o){
-          // Right of other
           if(Math.abs(nx-(o.px+o.comp+gap))<snapD)nx=o.px+o.comp+gap;
-          // Left of other
-          if(Math.abs(nx+n.comp-(o.px-gap))<snapD)nx=o.px-gap-n.comp;
-          // Below other
+          else if(Math.abs(nx+n.comp-(o.px-gap))<snapD)nx=o.px-gap-n.comp;
           if(Math.abs(ny-(o.py+o.larg+gap))<snapD)ny=o.py+o.larg+gap;
-          // Above other
-          if(Math.abs(ny+n.larg-(o.py-gap))<snapD)ny=o.py-gap-n.larg;
-          // Align tops
-          if(Math.abs(ny-o.py)<snapD)ny=o.py;
-          // Align lefts
-          if(Math.abs(nx-o.px)<snapD)nx=o.px;
+          else if(Math.abs(ny+n.larg-(o.py-gap))<snapD)ny=o.py-gap-n.larg;
+          if(Math.abs(ny-o.py)<snapD/2)ny=o.py;
+          if(Math.abs(nx-o.px)<snapD/2)nx=o.px;
         });
       }
+      // Collision — push out, if still colliding revert to last safe pos
+      var col=hasCollision(n,nx,ny,gap);
+      if(col){
+        var pushed=pushOut(n,nx,ny,gap);
+        nx=Math.max(0,Math.min(SW-n.comp,pushed.x));
+        ny=Math.max(0,Math.min(SH-n.larg,pushed.y));
+        if(hasCollision(n,nx,ny,gap)){nx=safeX;ny=safeY;el.style.borderColor='#f04a4a';setTimeout(function(){el&&(el.style.borderColor='')},200);}
+        else{safeX=nx;safeY=ny;}
+      } else {safeX=nx;safeY=ny;}
       n.px=nx;n.py=ny;
       el.style.left=(pad+n.px*s)+'px';el.style.top=(pad+n.py*s)+'px';
       if(selId===n.id){setV('rp-x',Math.round(n.px));setV('rp-y',Math.round(n.py));}
@@ -945,8 +964,147 @@ function dlDXF(){if(!NEST.length){toast('Otimize antes','err');return;}var c=gen
 function dlGcode(){if(!NEST.length){toast('Otimize antes','err');return;}var c=genGcode();if(c)dl('cortemaster.nc',c,'text/plain');toast('G-code exportado','ok');}
 function dlCSV(){if(!NEST.length){toast('Otimize antes','err');return;}var c=genCSV();if(c)dl('cortemaster.csv',c,'text/csv');toast('CSV exportado','ok');}
 
+
+/* ══════════ GCODE EDITOR ══════════ */
+var MACHINE_TPLS={
+  'Generic':{header:'; CorteMaster G-code\nG21\nG90\nG17',toolChange:'M6 T{SLOT}\nM3 S{RPM}\nG4 P2',pierce:'G0 Z5\nG0 X{X} Y{Y}\nG1 Z-{DEPTH} F{FEED_PLUNGE}',cut:'G1 X{X2} Y{Y1} F{FEED}\nG1 X{X2} Y{Y2} F{FEED}\nG1 X{X1} Y{Y2} F{FEED}\nG1 X{X1} Y{Y1} F{FEED}',retract:'G0 Z5',sheetChange:'; === Trocar chapa {SHEET} ===\nM5\nG0 Z50\nM0',footer:'M5\nG0 Z30\nG0 X0 Y0\nM30'},
+  'Biesse':{header:'; Biesse CNC\n; {DATE}\nBEGIN PGM {NAME} MM\nG17 G90 G21',toolChange:'TOOL CALL {SLOT} Z S{RPM}\nM3\nG4 F2',pierce:'L Z+5 FMAX\nL X+{X} Y+{Y} FMAX\nL Z-{DEPTH} F{FEED_PLUNGE}',cut:'L X+{X2} Y+{Y1} F{FEED}\nL X+{X2} Y+{Y2} F{FEED}\nL X+{X1} Y+{Y2} F{FEED}\nL X+{X1} Y+{Y1} F{FEED}',retract:'L Z+5 FMAX',sheetChange:'; Trocar chapa {SHEET}\nM5\nL Z+50 FMAX\nM0',footer:'M5\nL Z+30 FMAX\nL X+0 Y+0 FMAX\nEND PGM {NAME} MM'},
+  'SCM':{header:'; SCM Router\n; Gerado por CorteMaster v5\n%\nO0001',toolChange:'T{SLOT}\nM6\nS{RPM}\nM3\nG4 P2.',pierce:'G0 Z5.\nG0 X{X}. Y{Y}.\nG1 Z-{DEPTH}. F{FEED_PLUNGE}.',cut:'G1 X{X2}. Y{Y1}. F{FEED}.\nG1 X{X2}. Y{Y2}. F{FEED}.\nG1 X{X1}. Y{Y2}. F{FEED}.\nG1 X{X1}. Y{Y1}. F{FEED}.',retract:'G0 Z5.',sheetChange:'; Trocar chapa {SHEET}\nM5\nG0 Z50.\nM0',footer:'M5\nG0 Z30.\nG0 X0. Y0.\nM30\n%'},
+  'Thermwood':{header:'; Thermwood CNC\nG20\nG90\nG17',toolChange:'T{SLOT}\nM6\nS{RPM}\nM3',pierce:'G0 Z0.25\nG0 X{X} Y{Y}\nG1 Z-{DEPTH} F{FEED_PLUNGE}',cut:'G1 X{X2} Y{Y1} F{FEED}\nG1 X{X2} Y{Y2} F{FEED}\nG1 X{X1} Y{Y2} F{FEED}\nG1 X{X1} Y{Y1} F{FEED}',retract:'G0 Z0.25',sheetChange:'; Troca chapa {SHEET}\nM5\nG0 Z2\nM0',footer:'M5\nG0 Z2\nG0 X0 Y0\nM2'}
+};
+var gcodeCustom=null;
+
+function openGcodeEditor(){
+  if(!NEST.length){toast('Execute o nesting antes','err');return;}
+  var raw=genGcode();
+  document.getElementById('gce-raw').value=raw;
+  document.getElementById('gce-tpl').value='Generic';
+  loadGcodeTpl('Generic');
+  openModal('modal-gcode');
+}
+function loadGcodeTpl(name){
+  var t=MACHINE_TPLS[name];if(!t)return;
+  document.getElementById('gce-header').value=t.header;
+  document.getElementById('gce-toolchange').value=t.toolChange;
+  document.getElementById('gce-pierce').value=t.pierce;
+  document.getElementById('gce-cut').value=t.cut;
+  document.getElementById('gce-retract').value=t.retract;
+  document.getElementById('gce-sheetchange').value=t.sheetChange;
+  document.getElementById('gce-footer').value=t.footer;
+}
+function saveMachineTpl(){
+  var name=prompt('Nome do template de maquina:');if(!name)return;
+  MACHINE_TPLS[name]={
+    header:document.getElementById('gce-header').value,
+    toolChange:document.getElementById('gce-toolchange').value,
+    pierce:document.getElementById('gce-pierce').value,
+    cut:document.getElementById('gce-cut').value,
+    retract:document.getElementById('gce-retract').value,
+    sheetChange:document.getElementById('gce-sheetchange').value,
+    footer:document.getElementById('gce-footer').value
+  };
+  var sel=document.getElementById('gce-tpl');
+  var opt=document.createElement('option');opt.value=name;opt.textContent=name;
+  sel.appendChild(opt);sel.value=name;
+  toast('Template salvo: '+name,'ok');
+}
+function applyGcodeTpl(){
+  // Generate gcode using custom template
+  if(!NEST.length){toast('Execute o nesting','err');return;}
+  var hdr=document.getElementById('gce-header').value;
+  var tch=document.getElementById('gce-toolchange').value;
+  var pie=document.getElementById('gce-pierce').value;
+  var cut=document.getElementById('gce-cut').value;
+  var ret=document.getElementById('gce-retract').value;
+  var sch=document.getElementById('gce-sheetchange').value;
+  var ftr=document.getElementById('gce-footer').value;
+  var date=new Date().toLocaleString('pt-BR');
+  var gc=hdr.replace(/{DATE}/g,date).replace(/{NAME}/g,'RHINO_CNC')+'\n\n';
+  var cutTool=TOOLS.find(function(t){return t.tipo==='Fresa corte'})||{diam:6,rpm:18000,avanco:3000,passada:3,slot:1};
+  var bySheet={};NEST.forEach(function(n){var k=n.sheet+'_'+n.esp;if(!bySheet[k])bySheet[k]=[];bySheet[k].push(n);});
+  Object.keys(bySheet).sort().forEach(function(key){
+    var items=bySheet[key];var esp=items[0].esp;var sn=items[0].sheet+1;
+    var passes=Math.ceil(esp/cutTool.passada);
+    gc+='; === CHAPA '+sn+' | '+esp+'mm | '+passes+' passadas ===\n';
+    gc+=tch.replace(/{SLOT}/g,cutTool.slot).replace(/{RPM}/g,cutTool.rpm)+'\n\n';
+    items.forEach(function(n){
+      var off=(cutTool.diam/2);
+      var x1=(n.px+off).toFixed(3),y1=(-(n.py+off)).toFixed(3);
+      var x2=(n.px+n.comp-off).toFixed(3),y2=(-(n.py+n.larg-off)).toFixed(3);
+      var feedP=Math.round(cutTool.avanco*.3);
+      gc+='; '+n.code+' — '+n.nome+'\n';
+      for(var p=1;p<=passes;p++){
+        var depth=Math.min(p*cutTool.passada,esp).toFixed(3);
+        gc+=pie.replace(/{X}/g,x1).replace(/{Y}/g,y1).replace(/{DEPTH}/g,depth).replace(/{FEED_PLUNGE}/g,feedP)+'\n';
+        gc+=cut.replace(/{X1}/g,x1).replace(/{Y1}/g,y1).replace(/{X2}/g,x2).replace(/{Y2}/g,y2).replace(/{FEED}/g,cutTool.avanco)+'\n';
+        gc+=ret+'\n';
+      }
+      if(DRILLS[n.pecId]&&DRILLS[n.pecId].length){
+        var lastSlot=-1;
+        DRILLS[n.pecId].forEach(function(d){
+          if(d.slot&&d.slot!==lastSlot){var dt=TOOLS.find(function(t){return t.slot===d.slot})||{rpm:3000};gc+=tch.replace(/{SLOT}/g,d.slot).replace(/{RPM}/g,dt.rpm)+'\n';lastSlot=d.slot;}
+          gc+=pie.replace(/{X}/g,(n.px+d.x).toFixed(3)).replace(/{Y}/g,(-(n.py+d.y)).toFixed(3)).replace(/{DEPTH}/g,d.prof).replace(/{FEED_PLUNGE}/g,600)+'\n';
+          gc+=ret+'\n';
+        });
+        if(lastSlot>0)gc+=tch.replace(/{SLOT}/g,cutTool.slot).replace(/{RPM}/g,cutTool.rpm)+'\n';
+      }
+      gc+='\n';
+    });
+    gc+=sch.replace(/{SHEET}/g,sn)+'\n\n';
+  });
+  gc+=ftr.replace(/{DATE}/g,date).replace(/{NAME}/g,'RHINO_CNC');
+  document.getElementById('gce-raw').value=gc;
+  gcodeCustom=gc;
+  toast('G-code gerado com template','ok');
+}
+function dlGcodeCustom(){
+  var txt=document.getElementById('gce-raw').value;
+  if(!txt){toast('Gere o G-code primeiro','err');return;}
+  var b=new Blob([txt],{type:'text/plain'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download='cortemaster_custom.nc';a.click();URL.revokeObjectURL(u);
+  toast('G-code baixado','ok');
+}
+
 // Init
 goTab('mat');
 </script>
+
+<!-- GCODE EDITOR MODAL -->
+<div class="modal-bg" id="modal-gcode">
+  <div class="modal" style="width:780px;max-width:96vw">
+    <div class="modal-h">
+      <span class="modal-title">Editor de G-code / Template de Maquina</span>
+      <button class="btn btn-sm" onclick="closeModal('modal-gcode')">Fechar</button>
+    </div>
+    <div class="modal-body" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px 16px">
+      <!-- LEFT: Template editor -->
+      <div>
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px">
+          <select id="gce-tpl" style="flex:1;height:26px;font-size:11px" onchange="loadGcodeTpl(this.value)">
+            <option>Generic</option><option>Biesse</option><option>SCM</option><option>Thermwood</option>
+          </select>
+          <button class="btn btn-sm" onclick="saveMachineTpl()">+ Salvar como</button>
+        </div>
+        <div style="font-size:9px;color:var(--text3);margin-bottom:8px">Variaveis: {X} {Y} {X1} {Y1} {X2} {Y2} {DEPTH} {FEED} {FEED_PLUNGE} {RPM} {SLOT} {SHEET} {DATE} {NAME}</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div><label style="font-size:10px;color:var(--text2);display:block;margin-bottom:2px">Cabecalho</label><textarea id="gce-header" style="height:52px;font-family:DM Mono,monospace;font-size:10px"></textarea></div>
+          <div><label style="font-size:10px;color:var(--text2);display:block;margin-bottom:2px">Troca de ferramenta</label><textarea id="gce-toolchange" style="height:38px;font-family:DM Mono,monospace;font-size:10px"></textarea></div>
+          <div><label style="font-size:10px;color:var(--text2);display:block;margin-bottom:2px">Inicio do corte (pierce)</label><textarea id="gce-pierce" style="height:52px;font-family:DM Mono,monospace;font-size:10px"></textarea></div>
+          <div><label style="font-size:10px;color:var(--text2);display:block;margin-bottom:2px">Linha de corte</label><textarea id="gce-cut" style="height:62px;font-family:DM Mono,monospace;font-size:10px"></textarea></div>
+          <div><label style="font-size:10px;color:var(--text2);display:block;margin-bottom:2px">Retorno Z</label><textarea id="gce-retract" style="height:28px;font-family:DM Mono,monospace;font-size:10px"></textarea></div>
+          <div><label style="font-size:10px;color:var(--text2);display:block;margin-bottom:2px">Troca de chapa</label><textarea id="gce-sheetchange" style="height:38px;font-family:DM Mono,monospace;font-size:10px"></textarea></div>
+          <div><label style="font-size:10px;color:var(--text2);display:block;margin-bottom:2px">Rodape</label><textarea id="gce-footer" style="height:38px;font-family:DM Mono,monospace;font-size:10px"></textarea></div>
+        </div>
+        <button class="btn btn-a" style="width:100%;margin-top:8px" onclick="applyGcodeTpl()">&#9654; Gerar G-code com template</button>
+      </div>
+      <!-- RIGHT: Output -->
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:10px;color:var(--text2);font-weight:700">G-code gerado (editavel)</div>
+        <textarea id="gce-raw" style="flex:1;height:460px;font-family:DM Mono,monospace;font-size:10px;resize:none"></textarea>
+        <button class="btn btn-a" style="width:100%" onclick="dlGcodeCustom()">&#8595; Baixar .nc</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
